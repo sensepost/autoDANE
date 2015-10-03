@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Project SYSTEM "Project-4.6.dtd">
+<!-- eric4 project file for project adautopwn -->
+<!-- Saved: 2015-09-27, 01:33:58 -->
+<!-- Copyright (C) 2015 ,  -->
+<Project version="4.6">
+  <Language>en</Language>
+  <ProgLanguage mixed="0">Python</ProgLanguage>
+  <ProjectType>Qt4</ProjectType>
+  <Description></Description>
+  <Version>0.1</Version>
+  <Author></Author>
+  <Email></Email>
+  <Sources>
+    <Source>main.py</Source>
+    <Source>source/Ui_mainwindow.py</Source>
+    <Source>source/mainwindow.py</Source>
+    <Source>source/choosefootprint.py</Source>
+    <Source>source/dbfunctions.py</Source>
+    <Source>source/footprintfunctions.py</Source>
+    <Source>source/threads.py</Source>
+    <Source>source/Ui_choosefootprint.py</Source>
+    <Source>source/Ui_addhost.py</Source>
+    <Source>source/addhost.py</Source>
+    <Source>source/metasploitfunctions.py</Source>
+    <Source>source/Ui_adddomain.py</Source>
+    <Source>source/adddomain.py</Source>
+    <Source>source/Ui_adddomaincreds.py</Source>
+    <Source>source/adddomaincreds.py</Source>
+  </Sources>
+  <Forms>
+    <Form>source/mainwindow.ui</Form>
+    <Form>source/choosefootprint.ui</Form>
+    <Form>source/addhost.ui</Form>
+    <Form>source/adddomain.ui</Form>
+    <Form>source/adddomaincreds.ui</Form>
+  </Forms>
+  <Translations>
+  </Translations>
+  <Resources>
+  </Resources>
+  <Interfaces>
+  </Interfaces>
+  <Others>
+  </Others>
+  <MainScript>main.py</MainScript>
+  <Vcs>
+    <VcsType>None</VcsType>
+  </Vcs>
+  <FiletypeAssociations>
+    <FiletypeAssociation pattern="*.ui" type="FORMS" />
+    <FiletypeAssociation pattern="*.idl" type="INTERFACES" />
+    <FiletypeAssociation pattern="*.qm" type="TRANSLATIONS" />
+    <FiletypeAssociation pattern="*.ptl" type="SOURCES" />
+    <FiletypeAssociation pattern="*.pyw" type="SOURCES" />
+    <FiletypeAssociation pattern="*.ui.h" type="FORMS" />
+    <FiletypeAssociation pattern="*.ts" type="TRANSLATIONS" />
+    <FiletypeAssociation pattern="*.py" type="SOURCES" />
+    <FiletypeAssociation pattern="*.qrc" type="RESOURCES" />
+  </FiletypeAssociations>
+</Project>
