@@ -1,5 +1,0 @@
-#!/bin/bash
-
-mysql autodane < truncate.sql
-rm logs/*
-rm temp/*
