@@ -16,9 +16,9 @@ Run install.sh. This will install all the prerequisites
 Running
 -------
 
-After that, simply run ./main.py
+After that, simply run ./autodane.py
 
 License
 -------
 
-autoDANE is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License (http://creativecommons.org/licenses/by-nc-sa/4.0/) Permissions beyond the scope of this license may be available at http://sensepost.com/contact us/. 
+autodane is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License (http://creativecommons.org/licenses/by-nc-sa/4.0/) Permissions beyond the scope of this license may be available at http://sensepost.com/contact_us/.
