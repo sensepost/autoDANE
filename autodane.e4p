@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Project SYSTEM "Project-5.1.dtd">
+<!-- eric5 project file for project autodane -->
+<!-- Saved: 2015-12-01, 13:44:47 -->
+<!-- Copyright (C) 2015 ,  -->
+<Project version="5.1">
+  <Language>en_US</Language>
+  <Hash>1135dcb6d9ca37f4dc87815c847bdbb12e5b4250</Hash>
+  <ProgLanguage mixed="0">Python2</ProgLanguage>
+  <ProjectType>Qt4</ProjectType>
+  <Description></Description>
+  <Version>0.1</Version>
+  <Author></Author>
+  <Email></Email>
+  <Eol index="-1"/>
+  <Sources>
+    <Source>splash/Ui_dbconnecting.py</Source>
+    <Source>initialoptions/Ui_choosefootprint.py</Source>
+    <Source>autodane.py</Source>
+    <Source>main/Ui_mainwindow.py</Source>
+    <Source>splash/dbconnecting.py</Source>
+    <Source>worker/workerthread.py</Source>
+    <Source>plugins/host_enumeration/add_local_ip.py</Source>
+    <Source>plugins/footprinting/portscan_host.py</Source>
+    <Source>plugins/footprinting/portscan_net_range.py</Source>
+    <Source>settings.ini</Source>
+    <Source>initialoptions/choosefootprint.py</Source>
+    <Source>inputwindows/Ui_newtrigger.py</Source>
+    <Source>inputwindows/Ui_newtask.py</Source>
+    <Source>inputwindows/newtask.py</Source>
+    <Source>inputwindows/newtrigger.py</Source>
+    <Source>plugins/footprinting/host_dns_lookup.py</Source>
+    <Source>plugins/host_enumeration/add_local_nameservers.py</Source>
+    <Source>plugins/footprinting/screenshot_website.py</Source>
+    <Source>plugins/vuln_scanning/ms08_067.py</Source>
+    <Source>plugins/vuln_exploits/exploit_ms08_067.py</Source>
+    <Source>msf/exploit.py</Source>
+    <Source>plugins/pivoting/retry_local_accounts.py</Source>
+    <Source>plugins/pivoting/psexec_local_account.py</Source>
+    <Source>plugins/footprinting/portscan_scoped_host.py</Source>
+    <Source>plugins/vuln_scanning/weak_sql_creds.py</Source>
+    <Source>plugins/vuln_exploits/exploit_weak_sql_creds.py</Source>
+    <Source>main/mainwindow.py</Source>
+    <Source>plugins/vuln_exploits/exploit_weak_tomcat_creds.py</Source>
+    <Source>plugins/pivoting/retry_domain_accounts.py</Source>
+    <Source>plugins/pivoting/psexec_domain_account.py</Source>
+    <Source>plugins/footprinting/portscan_scoped_range.py</Source>
+    <Source>plugins/pivoting/verify_domain_credentials.py</Source>
+    <Source>plugins/vuln_scanning/weak_tomcat_creds.py</Source>
+  </Sources>
+  <Forms>
+    <Form>splash/dbconnecting.ui</Form>
+    <Form>initialoptions/choosefootprint.ui</Form>
+    <Form>main/mainwindow.ui</Form>
+    <Form>inputwindows/newtask.ui</Form>
+    <Form>inputwindows/newtrigger.ui</Form>
+  </Forms>
+  <Translations/>
+  <Resources/>
+  <Interfaces/>
+  <Others>
+    <Other>splash/Ui_dbconnecting.py</Other>
+  </Others>
+  <MainScript>autodane.py</MainScript>
+  <Vcs>
+    <VcsType>None</VcsType>
+  </Vcs>
+  <FiletypeAssociations>
+    <FiletypeAssociation pattern="*.idl" type="INTERFACES"/>
+    <FiletypeAssociation pattern="*.ptl" type="SOURCES"/>
+    <FiletypeAssociation pattern="*.py" type="SOURCES"/>
+    <FiletypeAssociation pattern="*.py2" type="SOURCES"/>
+    <FiletypeAssociation pattern="*.pyw2" type="SOURCES"/>
+    <FiletypeAssociation pattern="*.qm" type="TRANSLATIONS"/>
+    <FiletypeAssociation pattern="*.qrc" type="RESOURCES"/>
+    <FiletypeAssociation pattern="*.ts" type="TRANSLATIONS"/>
+    <FiletypeAssociation pattern="*.ui" type="FORMS"/>
+    <FiletypeAssociation pattern="*.ui.h" type="FORMS"/>
+  </FiletypeAssociations>
+</Project>
