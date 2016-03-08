@@ -17,6 +17,9 @@
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
+      <property name="contextMenuPolicy">
+       <enum>Qt::ActionsContextMenu</enum>
+      </property>
       <property name="currentIndex">
        <number>0</number>
       </property>
@@ -50,6 +53,12 @@
               <layout class="QGridLayout" name="gridLayout_5">
                <item row="0" column="0">
                 <widget class="QTableWidget" name="tblOpenPortsSummary">
+                 <property name="selectionMode">
+                  <enum>QAbstractItemView::SingleSelection</enum>
+                 </property>
+                 <property name="selectionBehavior">
+                  <enum>QAbstractItemView::SelectRows</enum>
+                 </property>
                  <column>
                   <property name="text">
                    <string>Port</string>
@@ -73,9 +82,25 @@
               <layout class="QGridLayout" name="gridLayout_6">
                <item row="0" column="0">
                 <widget class="QTableWidget" name="tblDomains">
+                 <property name="selectionMode">
+                  <enum>QAbstractItemView::SingleSelection</enum>
+                 </property>
+                 <property name="selectionBehavior">
+                  <enum>QAbstractItemView::SelectRows</enum>
+                 </property>
                  <column>
                   <property name="text">
                    <string>Domain Name</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>Domain Admins</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>Known Passwords</string>
                   </property>
                  </column>
                 </widget>
@@ -95,6 +120,12 @@
               <layout class="QGridLayout" name="gridLayout_7">
                <item row="0" column="0">
                 <widget class="QTableWidget" name="tblVulnsSummary">
+                 <property name="selectionMode">
+                  <enum>QAbstractItemView::SingleSelection</enum>
+                 </property>
+                 <property name="selectionBehavior">
+                  <enum>QAbstractItemView::SelectRows</enum>
+                 </property>
                  <column>
                   <property name="text">
                    <string>Vuln</string>
@@ -118,6 +149,12 @@
               <layout class="QGridLayout" name="gridLayout_8">
                <item row="0" column="0">
                 <widget class="QTableWidget" name="tblCredsSummary">
+                 <property name="selectionMode">
+                  <enum>QAbstractItemView::SingleSelection</enum>
+                 </property>
+                 <property name="selectionBehavior">
+                  <enum>QAbstractItemView::SelectRows</enum>
+                 </property>
                  <column>
                   <property name="text">
                    <string>Type</string>
@@ -386,6 +423,12 @@
                 <layout class="QGridLayout" name="gridLayout_9">
                  <item row="0" column="0">
                   <widget class="QTableWidget" name="tblHostPorts">
+                   <property name="selectionMode">
+                    <enum>QAbstractItemView::SingleSelection</enum>
+                   </property>
+                   <property name="selectionBehavior">
+                    <enum>QAbstractItemView::SelectRows</enum>
+                   </property>
                    <column>
                     <property name="text">
                      <string>Port</string>
@@ -404,6 +447,12 @@
                 <layout class="QGridLayout" name="gridLayout_11">
                  <item row="0" column="0">
                   <widget class="QTableWidget" name="tblHostVulns">
+                   <property name="selectionMode">
+                    <enum>QAbstractItemView::SingleSelection</enum>
+                   </property>
+                   <property name="selectionBehavior">
+                    <enum>QAbstractItemView::SelectRows</enum>
+                   </property>
                    <column>
                     <property name="text">
                      <string>Port</string>
@@ -427,6 +476,12 @@
                 <layout class="QGridLayout" name="gridLayout_10">
                  <item row="0" column="0">
                   <widget class="QTableWidget" name="tblHostCredsSummary">
+                   <property name="selectionMode">
+                    <enum>QAbstractItemView::SingleSelection</enum>
+                   </property>
+                   <property name="selectionBehavior">
+                    <enum>QAbstractItemView::SelectRows</enum>
+                   </property>
                    <column>
                     <property name="text">
                      <string>Type</string>
@@ -463,6 +518,12 @@
                <layout class="QGridLayout" name="gridLayout_15">
                 <item row="0" column="0">
                  <widget class="QTableWidget" name="tblLocalCreds">
+                  <property name="selectionMode">
+                   <enum>QAbstractItemView::SingleSelection</enum>
+                  </property>
+                  <property name="selectionBehavior">
+                   <enum>QAbstractItemView::SelectRows</enum>
+                  </property>
                   <column>
                    <property name="text">
                     <string>Username</string>
@@ -494,6 +555,12 @@
                <layout class="QGridLayout" name="gridLayout_16">
                 <item row="0" column="0">
                  <widget class="QTableWidget" name="tblDomainCreds">
+                  <property name="selectionMode">
+                   <enum>QAbstractItemView::SingleSelection</enum>
+                  </property>
+                  <property name="selectionBehavior">
+                   <enum>QAbstractItemView::SelectRows</enum>
+                  </property>
                   <column>
                    <property name="text">
                     <string>Domain</string>
@@ -520,6 +587,12 @@
                <layout class="QGridLayout" name="gridLayout_17">
                 <item row="0" column="0">
                  <widget class="QTableWidget" name="tblAvailableTokens">
+                  <property name="selectionMode">
+                   <enum>QAbstractItemView::SingleSelection</enum>
+                  </property>
+                  <property name="selectionBehavior">
+                   <enum>QAbstractItemView::SelectRows</enum>
+                  </property>
                   <column>
                    <property name="text">
                     <string>Token</string>
@@ -551,6 +624,12 @@
                 <width>16777215</width>
                 <height>150</height>
                </size>
+              </property>
+              <property name="selectionMode">
+               <enum>QAbstractItemView::SingleSelection</enum>
+              </property>
+              <property name="selectionBehavior">
+               <enum>QAbstractItemView::SelectRows</enum>
               </property>
               <column>
                <property name="text">
@@ -592,9 +671,192 @@
            </spacer>
           </item>
           <item>
+           <widget class="QPushButton" name="btnOpenRDPSession">
+            <property name="text">
+             <string>Open RDP Session</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnAddHost">
+            <property name="text">
+             <string>Add Host</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="btnUpdateHosts">
             <property name="text">
              <string>Update Hosts</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_21">
+       <attribute name="title">
+        <string>Domains</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_13">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_13">
+          <item>
+           <widget class="QTableWidget" name="tblDomains_2">
+            <property name="maximumSize">
+             <size>
+              <width>350</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="selectionMode">
+             <enum>QAbstractItemView::SingleSelection</enum>
+            </property>
+            <property name="selectionBehavior">
+             <enum>QAbstractItemView::SelectRows</enum>
+            </property>
+            <column>
+             <property name="text">
+              <string>Domain</string>
+             </property>
+            </column>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTabWidget" name="tabWidget_6">
+            <property name="currentIndex">
+             <number>0</number>
+            </property>
+            <widget class="QWidget" name="tab_22">
+             <attribute name="title">
+              <string>Domain Controllers</string>
+             </attribute>
+             <layout class="QGridLayout" name="gridLayout_35">
+              <item row="0" column="0">
+               <widget class="QTableWidget" name="tblDomainControllers">
+                <column>
+                 <property name="text">
+                  <string>IP Address</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>Host Name</string>
+                 </property>
+                </column>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="tab_24">
+             <attribute name="title">
+              <string>Cred Map</string>
+             </attribute>
+             <layout class="QGridLayout" name="gridLayout_36">
+              <item row="0" column="0">
+               <widget class="QTableWidget" name="tblDomainControllerCredMap">
+                <column>
+                 <property name="text">
+                  <string>IP Address</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>Host Name</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>Domain</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>Username</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>Password</string>
+                 </property>
+                </column>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="tab_23">
+             <attribute name="title">
+              <string>Users and Groups</string>
+             </attribute>
+             <layout class="QHBoxLayout" name="horizontalLayout_24">
+              <item>
+               <widget class="QGroupBox" name="groupBox_21">
+                <property name="title">
+                 <string>Groups</string>
+                </property>
+                <layout class="QGridLayout" name="gridLayout_37">
+                 <item row="0" column="0">
+                  <widget class="QTableWidget" name="tblDomainGroups">
+                   <property name="selectionMode">
+                    <enum>QAbstractItemView::SingleSelection</enum>
+                   </property>
+                   <property name="selectionBehavior">
+                    <enum>QAbstractItemView::SelectRows</enum>
+                   </property>
+                   <column>
+                    <property name="text">
+                     <string>Groups</string>
+                    </property>
+                   </column>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="QGroupBox" name="groupBox_22">
+                <property name="title">
+                 <string>Users</string>
+                </property>
+                <layout class="QGridLayout" name="gridLayout_38">
+                 <item row="0" column="0">
+                  <widget class="QTableWidget" name="tblDomainGroupUsers">
+                   <column>
+                    <property name="text">
+                     <string>Users</string>
+                    </property>
+                   </column>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_23">
+          <item>
+           <spacer name="horizontalSpacer_11">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnUpdateDomains">
+            <property name="text">
+             <string>Update</string>
             </property>
            </widget>
           </item>
@@ -611,12 +873,36 @@
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
            <widget class="QGroupBox" name="groupBox">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>450</width>
+              <height>16777215</height>
+             </size>
+            </property>
             <property name="title">
              <string>Hosts</string>
             </property>
             <layout class="QGridLayout" name="gridLayout_25">
              <item row="0" column="0">
               <widget class="QTableWidget" name="tblWebsites">
+               <property name="selectionMode">
+                <enum>QAbstractItemView::SingleSelection</enum>
+               </property>
+               <property name="selectionBehavior">
+                <enum>QAbstractItemView::SelectRows</enum>
+               </property>
+               <property name="sortingEnabled">
+                <bool>true</bool>
+               </property>
+               <attribute name="verticalHeaderShowSortIndicator" stdset="0">
+                <bool>false</bool>
+               </attribute>
                <column>
                 <property name="text">
                  <string>Host</string>
@@ -635,6 +921,11 @@
                <column>
                 <property name="text">
                  <string>Title</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>ID</string>
                 </property>
                </column>
               </widget>
@@ -668,7 +959,7 @@
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>522</width>
+                      <width>644</width>
                       <height>387</height>
                      </rect>
                     </property>
@@ -741,7 +1032,7 @@
         <item>
          <widget class="QTabWidget" name="tabWidget_3">
           <property name="currentIndex">
-           <number>2</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="tab_10">
            <attribute name="title">
@@ -750,6 +1041,12 @@
            <layout class="QGridLayout" name="gridLayout_21">
             <item row="0" column="0">
              <widget class="QTableWidget" name="tblAllDomainCreds">
+              <property name="selectionMode">
+               <enum>QAbstractItemView::SingleSelection</enum>
+              </property>
+              <property name="selectionBehavior">
+               <enum>QAbstractItemView::SelectRows</enum>
+              </property>
               <column>
                <property name="text">
                 <string>Domain</string>
@@ -763,6 +1060,16 @@
               <column>
                <property name="text">
                 <string>Password</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>LM Hash</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>NTLM Hash</string>
                </property>
               </column>
              </widget>
@@ -782,6 +1089,12 @@
               <layout class="QGridLayout" name="gridLayout_22">
                <item row="0" column="0">
                 <widget class="QTableWidget" name="tblValidDomainCreds">
+                 <property name="selectionMode">
+                  <enum>QAbstractItemView::SingleSelection</enum>
+                 </property>
+                 <property name="selectionBehavior">
+                  <enum>QAbstractItemView::SelectRows</enum>
+                 </property>
                  <column>
                   <property name="text">
                    <string>Host</string>
@@ -815,6 +1128,12 @@
               <layout class="QGridLayout" name="gridLayout_23">
                <item row="0" column="0">
                 <widget class="QTableWidget" name="tblInvalidDomainCreds">
+                 <property name="selectionMode">
+                  <enum>QAbstractItemView::SingleSelection</enum>
+                 </property>
+                 <property name="selectionBehavior">
+                  <enum>QAbstractItemView::SelectRows</enum>
+                 </property>
                  <column>
                   <property name="text">
                    <string>Host</string>
@@ -849,6 +1168,12 @@
            <layout class="QGridLayout" name="gridLayout_4">
             <item row="0" column="0">
              <widget class="QTableWidget" name="tblAllLocalCreds">
+              <property name="selectionMode">
+               <enum>QAbstractItemView::SingleSelection</enum>
+              </property>
+              <property name="selectionBehavior">
+               <enum>QAbstractItemView::SelectRows</enum>
+              </property>
               <column>
                <property name="text">
                 <string>Username</string>
@@ -886,6 +1211,12 @@
               <layout class="QGridLayout" name="gridLayout_13">
                <item row="0" column="0">
                 <widget class="QTableWidget" name="tblValidLocalCreds">
+                 <property name="selectionMode">
+                  <enum>QAbstractItemView::SingleSelection</enum>
+                 </property>
+                 <property name="selectionBehavior">
+                  <enum>QAbstractItemView::SelectRows</enum>
+                 </property>
                  <column>
                   <property name="text">
                    <string>Host</string>
@@ -924,6 +1255,12 @@
               <layout class="QGridLayout" name="gridLayout_14">
                <item row="0" column="0">
                 <widget class="QTableWidget" name="tblInvalidLocalCreds">
+                 <property name="selectionMode">
+                  <enum>QAbstractItemView::SingleSelection</enum>
+                 </property>
+                 <property name="selectionBehavior">
+                  <enum>QAbstractItemView::SelectRows</enum>
+                 </property>
                  <column>
                   <property name="text">
                    <string>Host</string>
@@ -963,6 +1300,12 @@
            <layout class="QGridLayout" name="gridLayout_24">
             <item row="0" column="0">
              <widget class="QTableWidget" name="tblTokens">
+              <property name="selectionMode">
+               <enum>QAbstractItemView::SingleSelection</enum>
+              </property>
+              <property name="selectionBehavior">
+               <enum>QAbstractItemView::SelectRows</enum>
+              </property>
               <column>
                <property name="text">
                 <string>Tokens</string>
@@ -990,6 +1333,27 @@
            </spacer>
           </item>
           <item>
+           <widget class="QPushButton" name="btnAddDomainCreds">
+            <property name="text">
+             <string>Add Domain Creds</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnImportLoot">
+            <property name="text">
+             <string>Import from msf loot</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnSyncJohnPotFile">
+            <property name="text">
+             <string>Get creds from pot file</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="btnUpdateCreds">
             <property name="text">
              <string>Update</string>
@@ -1004,9 +1368,9 @@
        <attribute name="title">
         <string>Task List</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_11">
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_13">
+       <layout class="QGridLayout" name="gridLayout_34">
+        <item row="0" column="0">
+         <layout class="QVBoxLayout" name="verticalLayout_11">
           <item>
            <widget class="QGroupBox" name="groupBox_4">
             <property name="title">
@@ -1015,6 +1379,12 @@
             <layout class="QGridLayout" name="gridLayout_18">
              <item row="0" column="0">
               <widget class="QTableWidget" name="tblTaskListPending">
+               <property name="selectionMode">
+                <enum>QAbstractItemView::SingleSelection</enum>
+               </property>
+               <property name="selectionBehavior">
+                <enum>QAbstractItemView::SelectRows</enum>
+               </property>
                <column>
                 <property name="text">
                  <string>Category</string>
@@ -1036,41 +1406,19 @@
            </widget>
           </item>
           <item>
-           <widget class="QGroupBox" name="groupBox_17">
+           <widget class="QGroupBox" name="groupBox_20">
             <property name="title">
-             <string>In Progress</string>
+             <string>Eventless Tasks</string>
             </property>
-            <layout class="QGridLayout" name="gridLayout_20">
+            <layout class="QGridLayout" name="gridLayout_33">
              <item row="0" column="0">
-              <widget class="QTableWidget" name="tblTaskListInProgress">
-               <column>
-                <property name="text">
-                 <string>Category</string>
-                </property>
-               </column>
-               <column>
-                <property name="text">
-                 <string>Task</string>
-                </property>
-               </column>
-               <column>
-                <property name="text">
-                 <string>Count</string>
-                </property>
-               </column>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item>
-           <widget class="QGroupBox" name="groupBox_16">
-            <property name="title">
-             <string>Completed</string>
-            </property>
-            <layout class="QGridLayout" name="gridLayout_19">
-             <item row="0" column="0">
-              <widget class="QTableWidget" name="tblTaskListDone">
+              <widget class="QTableWidget" name="tblTaskListPending_2">
+               <property name="selectionMode">
+                <enum>QAbstractItemView::SingleSelection</enum>
+               </property>
+               <property name="selectionBehavior">
+                <enum>QAbstractItemView::SelectRows</enum>
+               </property>
                <column>
                 <property name="text">
                  <string>Category</string>
@@ -1093,7 +1441,75 @@
           </item>
          </layout>
         </item>
-        <item>
+        <item row="0" column="1">
+         <widget class="QGroupBox" name="groupBox_17">
+          <property name="title">
+           <string>In Progress</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_20">
+           <item row="0" column="0">
+            <widget class="QTableWidget" name="tblTaskListInProgress">
+             <property name="selectionMode">
+              <enum>QAbstractItemView::SingleSelection</enum>
+             </property>
+             <property name="selectionBehavior">
+              <enum>QAbstractItemView::SelectRows</enum>
+             </property>
+             <column>
+              <property name="text">
+               <string>Category</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Task</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Count</string>
+              </property>
+             </column>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QGroupBox" name="groupBox_16">
+          <property name="title">
+           <string>Completed</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_19">
+           <item row="0" column="0">
+            <widget class="QTableWidget" name="tblTaskListDone">
+             <property name="selectionMode">
+              <enum>QAbstractItemView::SingleSelection</enum>
+             </property>
+             <property name="selectionBehavior">
+              <enum>QAbstractItemView::SelectRows</enum>
+             </property>
+             <column>
+              <property name="text">
+               <string>Category</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Task</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Count</string>
+              </property>
+             </column>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="1" column="0" colspan="3">
          <layout class="QHBoxLayout" name="horizontalLayout_14">
           <item>
            <spacer name="horizontalSpacer_3">
@@ -1130,44 +1546,230 @@
        <attribute name="title">
         <string>Logs</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_6">
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_17">
-          <item>
-           <widget class="QGroupBox" name="groupBox_11">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>450</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="title">
-             <string>Tasks</string>
-            </property>
-            <layout class="QGridLayout" name="gridLayout_31">
-             <item row="0" column="0">
-              <widget class="QTableWidget" name="tblTaskLogs">
-               <column>
-                <property name="text">
-                 <string>Category</string>
-                </property>
-               </column>
-               <column>
-                <property name="text">
-                 <string>Task</string>
-                </property>
-               </column>
+       <layout class="QGridLayout" name="gridLayout_42">
+        <item row="0" column="0">
+         <widget class="QFrame" name="frame_3">
+          <property name="maximumSize">
+           <size>
+            <width>450</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_14">
+           <property name="margin">
+            <number>0</number>
+           </property>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_17">
+             <item>
+              <widget class="QCheckBox" name="cbxTaskLogsFilterVisible">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="layoutDirection">
+                <enum>Qt::RightToLeft</enum>
+               </property>
+               <property name="text">
+                <string>Filter</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
               </widget>
              </item>
+             <item>
+              <spacer name="horizontalSpacer_13">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
             </layout>
-           </widget>
-          </item>
+           </item>
+           <item>
+            <widget class="QFrame" name="frameLogFilter">
+             <property name="maximumSize">
+              <size>
+               <width>450</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::Box</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_6">
+              <property name="leftMargin">
+               <number>17</number>
+              </property>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_25">
+                <item>
+                 <widget class="QLabel" name="label">
+                  <property name="minimumSize">
+                   <size>
+                    <width>85</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>85</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Category</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="cmbLogsCategory"/>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_27">
+                <item>
+                 <widget class="QLabel" name="label_3">
+                  <property name="minimumSize">
+                   <size>
+                    <width>85</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>85</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Task</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="cmbLogsTask"/>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_28">
+                <item>
+                 <widget class="QLabel" name="label_5">
+                  <property name="minimumSize">
+                   <size>
+                    <width>85</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>85</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Log contains</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="txtLogContains"/>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_29">
+                <item>
+                 <spacer name="horizontalSpacer_14">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btnSearchLogs">
+                  <property name="text">
+                   <string>Search</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="groupBox_11">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>450</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="title">
+              <string> Tasks</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_31">
+              <item row="0" column="0">
+               <widget class="QTableWidget" name="tblTaskLogs">
+                <property name="selectionMode">
+                 <enum>QAbstractItemView::SingleSelection</enum>
+                </property>
+                <property name="selectionBehavior">
+                 <enum>QAbstractItemView::SelectRows</enum>
+                </property>
+                <column>
+                 <property name="text">
+                  <string>Category</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>Task</string>
+                 </property>
+                </column>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <layout class="QVBoxLayout" name="verticalLayout_15">
           <item>
            <widget class="QGroupBox" name="groupBox_12">
             <property name="title">
@@ -1176,6 +1778,12 @@
             <layout class="QGridLayout" name="gridLayout_32">
              <item row="0" column="0">
               <widget class="QTextEdit" name="txtTaskLog">
+               <property name="font">
+                <font>
+                 <family>Monospace</family>
+                 <italic>false</italic>
+                </font>
+               </property>
                <property name="lineWrapMode">
                 <enum>QTextEdit::NoWrap</enum>
                </property>
@@ -1186,7 +1794,7 @@
           </item>
          </layout>
         </item>
-        <item>
+        <item row="1" column="0" colspan="2">
          <layout class="QHBoxLayout" name="horizontalLayout_22">
           <item>
            <spacer name="horizontalSpacer_4">
@@ -1202,9 +1810,9 @@
            </spacer>
           </item>
           <item>
-           <widget class="QPushButton" name="btnUpdateTaskLogs">
+           <widget class="QPushButton" name="btnRerunTask">
             <property name="text">
-             <string>Update</string>
+             <string>Re-run task</string>
             </property>
            </widget>
           </item>
@@ -1222,7 +1830,7 @@
           <item>
            <widget class="QLabel" name="label_16">
             <property name="text">
-             <string>autodane v1.0</string>
+             <string>autodane v2.0</string>
             </property>
            </widget>
           </item>
@@ -1246,43 +1854,6 @@
              <string/>
             </property>
            </widget>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_18">
-            <item>
-             <widget class="QLabel" name="lblEmailIcon">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>emailicon</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="label_20">
-              <property name="text">
-               <string>Research@SensePost.com</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer_7">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_19">
@@ -1339,6 +1910,43 @@
             </item>
             <item>
              <spacer name="horizontalSpacer_9">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_18">
+            <item>
+             <widget class="QLabel" name="lblEmailIcon">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>emailicon</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_20">
+              <property name="text">
+               <string>Research@SensePost.com</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_7">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>

@@ -44,7 +44,7 @@ class NewTrigger(QDialog, Ui_Dialog):
             sql = "insert into trigger_events (trigger_descriptions_id, task_descriptions_id, value_mask, enabled) values (%s, %s, %s, %s)"
             trigger_id = self.triggers[str(self.cmbTriggers.currentText())]
             task_id = self.tasks[str(self.cmbTasks.currentText())]
-            cursor.execute(sql, (trigger_id, task_id, self.txtValueMask.text(), self.cbxEnabled.isChecked()))
+            cursor.execute(sql, (trigger_id, task_id, self.txtValueMask.text(), self.cbxEnabled.isChecked(), ))
             cursor.close()
             self.accept()
         else:
@@ -62,7 +62,7 @@ class NewTrigger(QDialog, Ui_Dialog):
         self.cmbTasks.addItem("")
         sql = "select id, task_name from task_descriptions where task_categories_id = %s"
         cursor = self.db.cursor()
-        cursor.execute(sql, (self.categories[str(self.cmbCategory.currentText())]))
+        cursor.execute(sql, (self.categories[str(self.cmbCategory.currentText())], ))
         for row in cursor.fetchall():
             self.tasks[row[1]] = row[0]
             self.cmbTasks.addItem(row[1])

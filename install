@@ -3,6 +3,7 @@
 apt-get install msgpack-python python-twisted python-pip wkhtmltopdf
 
 pip install netifaces
+pip install docxtpl
 
 git clone https://github.com/CoreSecurity/impacket.git
 cd impacket

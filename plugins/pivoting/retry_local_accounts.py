@@ -1,5 +1,4 @@
 import os
-import time
 
 def run(params):
     sql = """
@@ -23,28 +22,31 @@ def run(params):
                 (hd.ip_address, lc.username) not in (select hd.ip_address, lc.username from host_data hd join port_data pd on hd.id = pd.host_data_id join local_credentials_map m on hd.id = m.host_data_id join local_credentials lc on lc.id = m.local_credentials_id where hd.footprint_id = %s and pd.port_number = 445 and m.valid = 1)"""
             
     cursor = params.db.cursor()
-    cursor.execute(sql, (params.footprint_id))
+    cursor.execute(sql, (params.footprint_id, ))
     
     row = cursor.fetchone()
     cursor.close()
     #TODO: delimit password, else funny characters might cause the command to fail
 
     if row != None:
+        #TODO: modify to be the same as the domain accounts plugin
+        
         cmd = "hydra -l {1} -p {2} {0} smb >&1 | grep \"1 valid password found\" | wc -l".format(row[2], row[3], row[4])
-        
+        params.log(cmd)
+        params.log("")
         res = os.popen(cmd).read()[:-1]
+        params.log(res)
         
-        if res == "1":
-            #print "creds worked"
-            params.log("creds worked")
-        else:
-            #print "creds did not work"
-            params.log("creds did not work")
+#        if res == "1":
+#            #print "creds worked"
+#            params.log("creds worked")
+#        else:
+#            #print "creds did not work"
+#            params.log("creds did not work")
         
         cursorb = params.db.cursor()
-        cursorb.execute("call addToLocalCredentialsMap(%s, %s, %s)", (row[0], row[1], (res == "1")))
+        cursorb.execute("call addToLocalCredentialsMap(%s, %s, %s)", (row[0], row[1], (res == "1"), ))
         cursorb.close()
-    else:
+    #else:
         #print "no creds to check"
-        params.log("no creds to check")
-        time.sleep(1)
+     #   params.log("no creds to check")

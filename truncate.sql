@@ -1,5 +1,7 @@
 truncate table domain_credentials;
 truncate table domain_credentials_map;
+truncate table domain_groups;
+truncate table domain_user_group_map;
 truncate table domains;
 truncate table exploit_logs;
 truncate table footprints;

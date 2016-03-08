@@ -73,6 +73,7 @@ action = function(host, port)
     { username = "manager", password = "123456"},
     { username = "manager", password = "123123"},
     { username = "manager", password = "1234578"},
+    { username = "QCC", password = "QLogic66"},
   }
 
   local result = {}

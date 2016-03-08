@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-5.1.dtd">
 <!-- eric5 project file for project autodane -->
-<!-- Saved: 2015-12-01, 13:44:47 -->
-<!-- Copyright (C) 2015 ,  -->
+<!-- Saved: 2016-02-15, 15:31:52 -->
+<!-- Copyright (C) 2016 ,  -->
 <Project version="5.1">
   <Language>en_US</Language>
   <Hash>1135dcb6d9ca37f4dc87815c847bdbb12e5b4250</Hash>
@@ -24,7 +24,6 @@
     <Source>plugins/footprinting/portscan_host.py</Source>
     <Source>plugins/footprinting/portscan_net_range.py</Source>
     <Source>settings.ini</Source>
-    <Source>initialoptions/choosefootprint.py</Source>
     <Source>inputwindows/Ui_newtrigger.py</Source>
     <Source>inputwindows/Ui_newtask.py</Source>
     <Source>inputwindows/newtask.py</Source>
@@ -40,13 +39,24 @@
     <Source>plugins/footprinting/portscan_scoped_host.py</Source>
     <Source>plugins/vuln_scanning/weak_sql_creds.py</Source>
     <Source>plugins/vuln_exploits/exploit_weak_sql_creds.py</Source>
-    <Source>main/mainwindow.py</Source>
     <Source>plugins/vuln_exploits/exploit_weak_tomcat_creds.py</Source>
     <Source>plugins/pivoting/retry_domain_accounts.py</Source>
     <Source>plugins/pivoting/psexec_domain_account.py</Source>
     <Source>plugins/footprinting/portscan_scoped_range.py</Source>
     <Source>plugins/pivoting/verify_domain_credentials.py</Source>
     <Source>plugins/vuln_scanning/weak_tomcat_creds.py</Source>
+    <Source>plugins/domain_enumeration/enumerate_users_and_groups.py</Source>
+    <Source>plugins/domain_enumeration/extract_domain_hashes.py</Source>
+    <Source>initialoptions/choosefootprint.py</Source>
+    <Source>main/mainwindow.py</Source>
+    <Source>plugins/domain_enumeration/bruteforce_ntlm_hashes.py</Source>
+    <Source>inputwindows/Ui_confirmation.py</Source>
+    <Source>inputwindows/confirmation.py</Source>
+    <Source>plugins/footprinting/net_range_dns_lookup.py</Source>
+    <Source>plugins/footprinting/scoped_range_dns_lookup.py</Source>
+    <Source>plugins/host_enumeration/zone_transfer_assigned_domain.py</Source>
+    <Source>inputwindows/Ui_adddomaincreds.py</Source>
+    <Source>inputwindows/adddomaincreds.py</Source>
   </Sources>
   <Forms>
     <Form>splash/dbconnecting.ui</Form>
@@ -54,6 +64,8 @@
     <Form>main/mainwindow.ui</Form>
     <Form>inputwindows/newtask.ui</Form>
     <Form>inputwindows/newtrigger.ui</Form>
+    <Form>inputwindows/confirmation.ui</Form>
+    <Form>inputwindows/adddomaincreds.ui</Form>
   </Forms>
   <Translations/>
   <Resources/>

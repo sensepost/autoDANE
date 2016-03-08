@@ -2,7 +2,7 @@ import os
 
 def run(params):
     cursor = params.db.cursor()
-    cursor.execute("select hd.id, hd.ip_address, pd.port_number from host_data hd join port_data pd on hd.id = pd.host_data_id where pd.id = %s",  (params.item_identifier))
+    cursor.execute("select hd.id, hd.ip_address, pd.port_number from host_data hd join port_data pd on hd.id = pd.host_data_id where pd.id = %s",  (params.item_identifier, ))
     row = cursor.fetchone()
     cursor.close()
     
@@ -14,9 +14,12 @@ def run(params):
         protocol = "https"
         
     #print "screenshot site at {0}://{1}:{2}/".format(protocol, host, port)
-    params.log("screenshot site at {0}://{1}:{2}/".format(protocol, host, port))
+    #params.log("screenshot site at {0}://{1}:{2}/".format(protocol, host, port))
 
-    html = os.popen('curl -m 30 -s -k --location {0}://{1}:{2}/'.format(protocol, host, port)).read()
+    cmd = 'curl -m 60 -s -k --location {0}://{1}:{2}/'.format(protocol, host, port)
+    html = os.popen(cmd).read()
+    params.log(cmd)
+    
     title = ""
     if html.find("<title") > -1:
         title = html[html.find("<title")+6:]
@@ -40,12 +43,14 @@ def run(params):
         title = ""
     else:
         title = ""
-        
-    #print "the title is {0}".format(title)
+    
     params.log("the title is {0}".format(title))
+    params.log("")
     
     filename = "temp/{0}.jpg".format(params.getRandomFileName())
-    os.popen("wkhtmltoimage --load-error-handling ignore -q {0}://{1}:{2}/ {3}".format(protocol, host, port, filename))
+    cmd = "timeout 60 wkhtmltoimage --load-error-handling ignore -q {0}://{1}:{2}/ {3}".format(protocol, host, port, filename)
+    os.popen(cmd)
+    params.log(cmd)
     
     image = None
     try:
@@ -55,5 +60,5 @@ def run(params):
         pass
     
     cursor = params.db.cursor()
-    cursor.execute("call addWebsite(%s, %s, %s, %s)", (params.item_identifier, title,  html, image))
+    cursor.execute("call addWebsite(%s, %s, %s, %s)", (params.item_identifier, title,  html, image, ))
     cursor.close()

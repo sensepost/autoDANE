@@ -1,11 +1,20 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
+import thread
 import threading
+import time
+import os
+import random
+import string
 
 from worker.workerthread import WorkerThread
 
 from .Ui_mainwindow import Ui_MainWindow
+from inputwindows.confirmation import wndConfirmation
+from inputwindows.textinput import wndTextInput
+from inputwindows.adddomaincreds import wndAddDomainCreds
+from inputwindows.addhost import wndAddHost
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     workerThreads = []
@@ -18,12 +27,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     updateTaskListTrigger = pyqtSignal()
     updateTaskListInterval = 1
     
+    updateCredsTrigger = pyqtSignal()
+    
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
         self.setupUi(self)
         self.initHostsTreeview()
         self.updateSummaryTrigger.connect(self.handleUpdateSummaryTrigger)
         self.updateTaskListTrigger.connect(self.handleUpdateTaskListTrigger)
+        self.updateCredsTrigger.connect(self.handleUpdateCredsTrigger)
         
         logoPixmap = QPixmap(QString.fromUtf8('images/logo.png'))
         logoScaledPixmap = logoPixmap.scaled(self.lblSensePostLogo.size(),  Qt.KeepAspectRatio)
@@ -51,7 +63,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def handleUpdateTaskListTrigger(self):
         self.on_btnUpdateTaskList_clicked()
-        
+    
+    def handleUpdateCredsTrigger(self):
+        self.on_btnUpdateCreds_clicked()
+        self.updateDomainsSummary()
+    
     def closeEvent(self, event):
         for wt in self.workerThreads:
             try:
@@ -59,91 +75,251 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             except:
                 pass
             
+        #try:
+        #    wt.metasploitProcess.terminate()
+        #except:
+        #    pass
+        event.accept()
+    
+    def setupFilterCombos(self):
+        categories = [ "" ]
+        sqlCategory = "select category from task_categories order by position_id"
+        cursor = self.db.cursor()
+        cursor.execute(sqlCategory)
+        for r in cursor.fetchall():
+            categories.append(r[0])
+        cursor.close()
+        
+        self.cmbLogsCategory.addItems(categories)
+        
+    @pyqtSignature("QString")
+    def on_cmbLogsCategory_currentIndexChanged(self, p0):
+        tasks = [ "" ]
+        sqlTasks = "select td.task_name from task_categories tc join task_descriptions td on tc.id = td.task_categories_id where tc.category = %s and td.enabled = 1 order by task_name"
+        cursor = self.db.cursor()
+        cursor.execute(sqlTasks, (p0, ))
+        for r in cursor.fetchall():
+            tasks.append(r[0])
+        cursor.close()
+        
+        self.cmbLogsTask.clear()
+        self.cmbLogsTask.addItems(tasks)
+        
+    def getTaskIdsByPosition(self, position):
+        sql = "select td.id from task_descriptions td join task_categories tc on tc.id = td.task_categories_id where tc.position_id = %s"
+        result = []
+        
+        cursor = self.db.cursor()
+        cursor.execute(sql, (position, ))
+        for row in cursor.fetchall():
+            result.append(row[0])
+        cursor.close()
+        
+        return result
+        
+    def getTaskIdsByPositionWoMsf(self, position,  msf):
+        sql = "select td.id from task_descriptions td join task_categories tc on tc.id = td.task_categories_id where tc.position_id = %s and td.uses_metasploit = %s"
+        result = []
+        
+        cursor = self.db.cursor()
+        cursor.execute(sql, (position, msf, ))
+        for row in cursor.fetchall():
+            result.append(row[0])
+        cursor.close()
+        
+        return result
+        
+    def startWork(self, maxDepth, nmapTiming, networkInterface, thread_counts):
+        footprinting = [] 
+        footprinting.extend(self.getTaskIdsByPosition(1))
+        footprinting.extend(self.getTaskIdsByPosition(2))
+        footprinting.extend(self.getTaskIdsByPosition(3))
+        
+        vuln_exploits = [] # 4
+        vuln_exploits.extend(self.getTaskIdsByPosition(4))
+        
+        pivoting_nomsf = [] # 5
+        pivoting_nomsf.extend(self.getTaskIdsByPositionWoMsf(5, 0))
+        
+        pivoting_msf = [] # 5
+        pivoting_msf.extend(self.getTaskIdsByPositionWoMsf(5, 1))
+        
+        domain_enumeration = [] # 6
+        domain_enumeration.extend(self.getTaskIdsByPosition(6))
+
+        all_tasks = []        
+        all_tasks.extend(footprinting)
+        all_tasks.extend(vuln_exploits)
+        all_tasks.extend(pivoting_nomsf)
+        all_tasks.extend(pivoting_msf)
+        all_tasks.extend(domain_enumeration)
+        
+        #################################################
+        
+        for i in range(thread_counts['all']):
+            wt = WorkerThread()
+            wt.init(self.footprint_id, all_tasks, maxDepth, nmapTiming, networkInterface)
+            wt.start()
+            self.workerThreads.append(wt)
+            time.sleep(5)
+            
+        for i in range(thread_counts['footprinting']):
+            wt = WorkerThread()
+            wt.init(self.footprint_id, footprinting, maxDepth, nmapTiming, networkInterface)
+            wt.start()
+            self.workerThreads.append(wt)
+            time.sleep(5)
+            
+        for i in range(thread_counts['exploits']):
+            wt = WorkerThread()
+            wt.init(self.footprint_id, vuln_exploits, maxDepth, nmapTiming, networkInterface)
+            wt.start()
+            self.workerThreads.append(wt)
+            time.sleep(5)
+            
+        for i in range(thread_counts['pivoting']):
+            wt = WorkerThread()
+            wt.init(self.footprint_id, pivoting_nomsf, maxDepth, nmapTiming, networkInterface)
+            wt.start()
+            self.workerThreads.append(wt)
+            time.sleep(5)
+            
+        for i in range(thread_counts['pivoting_msf']):
+            wt = WorkerThread()
+            wt.init(self.footprint_id, pivoting_msf, maxDepth, nmapTiming, networkInterface)
+            wt.start()
+            self.workerThreads.append(wt)
+            time.sleep(5)
+            
+        for i in range(thread_counts['domain_enumeration']):
+            wt = WorkerThread()
+            wt.init(self.footprint_id, domain_enumeration, maxDepth, nmapTiming, networkInterface)
+            wt.start()
+            self.workerThreads.append(wt)
+            time.sleep(5)
+            
+    def importHashesFromLoot(self, domain, filename):
         try:
-            wt.metasploitProcess.terminate()
+            with open(filename) as f:
+                for line in f:
+                    data = line.split(":")
+                    username = data[0]
+                    lm_hash = data[2]
+                    nt_hash = data[3][:-1]
+                    if username.find("$") == -1:
+                        cursor = self.db.cursor()
+                        cursor.execute("call addDomainCreds(%s, %s, %s, %s, '', %s, %s)",  (self.footprint_id, 0, domain, username, lm_hash, nt_hash, ))
+                        cursor.close()
+                        
+            self.syncCredsWithPotFile()
         except:
             pass
-        event.accept()
         
-    def startWork(self):
-        normal_tasks = [1, 2, 3, 4, 5, 6, 7, 11, 12, 14, 18, 19]
-        recursive_tasks = [9,  16]
-        metasploit_tasks = [8, 10, 13, 15, 17]
+    @pyqtSignature("")
+    def on_btnImportLoot_clicked(self):
+        w = wndTextInput()
+        w.setWindowTitle("Enter loot file name")
+        if w.exec_():
+            thread.start_new_thread(self.importHashesFromLoot, (w.txtDomain.text(), w.txtLootFileName.text(), ))
+    
+    @pyqtSignature("")
+    def on_btnAddHost_clicked(self):
+        w = wndAddHost()
+        if w.exec_():
+            #print w.txtIPAddress.text()
+            cursor = self.db.cursor()
+            cursor.execute("call addHost(%s, %s, '', 0)", (self.footprint_id, w.txtIPAddress.text(), ))
+            cursor.close()
+            
+    @pyqtSignature("")
+    def on_btnAddDomainCreds_clicked(self):
+        w = wndAddDomainCreds()
+        if w.exec_():
+            cursor = self.db.cursor()
+            cursor.execute("call addDomainCreds(%s, 0, %s, %s, %s, %s, %s)",  (self.footprint_id, w.txtDomain.text(), w.txtUsername.text(), w.txtPassword.text(), w.txtLMHash.text(), w.txtNTLMHash.text(), ))
+            cursor.close()
+            
+            if w.cbxCheckAgainstDC.isChecked() == True:
+                cursor = self.db.cursor()
+                cursor.execute("update domain_credentials set verified = 1, valid = 1 where footprint_id = %s and domain = %s and username = %s", (self.footprint_id, w.txtDomain.text(), w.txtUsername.text(), ))
+                cursor.close()
+    
+    @pyqtSignature("")
+    def on_btnOpenRDPSession_clicked(self):
+        try:
+            index = self.tvHosts.selectedIndexes()[0]
+            crawler = index.model().itemFromIndex(index)
+            host = crawler.text()
+            
+            domain = self.tblDomainCreds.item(self.tblDomainCreds.currentRow(), 0).text()
+            username = self.tblDomainCreds.item(self.tblDomainCreds.currentRow(), 1).text()
+            password = self.tblDomainCreds.item(self.tblDomainCreds.currentRow(), 2).text()
+            
+            delimited_pwd = ""
+            for c in password:
+                delimited_pwd = delimited_pwd + "\{}".format(c)
+            
+            cmd = "rdesktop -0 -g 1024x768 -d {} -u {} -p {} {}".format(domain, username, delimited_pwd, host)
+            print cmd
+            thread.start_new_thread(self.runCmd, (cmd, ))
+        except:
+            pass
         
-        tasks = []
-        for i in normal_tasks:
-            tasks.append(i)
-        for i in recursive_tasks:
-            tasks.append(i)
-        for i in metasploit_tasks:
-            tasks.append(i)
+    def runCmd(self, cmd):
+        os.popen(cmd)
         
-        #wt1 = WorkerThread()
-        #wt1.init(self.footprint_id, normal_tasks)
-        #wt1.start()
-        #self.workerThreads.append(wt1)
-        
-        #wt2 = WorkerThread()
-        #wt2.init(self.footprint_id, recursive_tasks)
-        #wt2.start()
-        #self.workerThreads.append(wt2)
-        
-        #wt3 = WorkerThread()
-        #wt3.init(self.footprint_id, metasploit_tasks)
-        #wt3.start()
-        #self.workerThreads.append(wt3)
-        
-        wt1 = WorkerThread()
-        wt1.init(self.footprint_id, tasks)
-        wt1.start()
-        self.workerThreads.append(wt1)
-        
-        #wt2 = WorkerThread()
-        #wt2.init(self.footprint_id, tasks)
-        #wt2.start()
-        #self.workerThreads.append(wt2)
-        
+    @pyqtSignature("")
+    def on_btnRerunTask_clicked(self):
+        w = wndConfirmation()
+        if w.exec_():
+            cursor = self.db.cursor()
+            cursor.execute("update task_list set completed = 0 where id = %s", (self.taskLogs[self.task_log_index][1], ))
+            cursor.close()
+    
+    
     taskLogs = []
     @pyqtSignature("")
-    def on_btnUpdateTaskLogs_clicked(self):
+    def on_btnSearchLogs_clicked(self):
         self.taskLogs = []
         self.tblTaskLogs.setRowCount(0)
-        sql = """select
-                    tc.category,
-                    td.task_name,
-                    tl.log
-                from
-                    task_list tl
-                    join task_descriptions td on td.id = tl.task_descriptions_id
-                    join task_categories tc on tc.id = td.task_categories_id
-                where 
-                    tl.footprint_id = %s and
-                    tl.completed = 1 and
-                    tl.log is not null
-                order by 
-                    tc.category,
-                    td.task_name"""
+        
+        sqlNeitherSelected = """select tc.category, td.task_name, tl.log, tl.id from task_list tl join task_descriptions td on td.id = tl.task_descriptions_id join task_categories tc on tc.id = td.task_categories_id where tl.footprint_id = %s and tl.completed = 1 and tl.log is not null and tl.log like %s order by tc.position_id, td.task_name"""
+        sqlCategorySelected = """select tc.category, td.task_name, tl.log, tl.id from task_list tl join task_descriptions td on td.id = tl.task_descriptions_id join task_categories tc on tc.id = td.task_categories_id where  tl.footprint_id = %s and tl.completed = 1 and tl.log is not null and tc.category = %s and tl.log like %s order by  tc.position_id, td.task_name"""
+        sqlBothSelected = """select tc.category, td.task_name, tl.log, tl.id from task_list tl join task_descriptions td on td.id = tl.task_descriptions_id join task_categories tc on tc.id = td.task_categories_id where  tl.footprint_id = %s and tl.completed = 1 and tl.log is not null and tc.category = %s and td.task_name = %s and tl.log like %s order by  tc.position_id, td.task_name"""
         cursor = self.db.cursor()
-        cursor.execute(sql, (self.footprint_id))
+        
+        if self.cmbLogsCategory.currentText() == "":
+            cursor.execute(sqlNeitherSelected, (self.footprint_id, "%{}%".format(self.txtLogContains.text())))
+        elif self.cmbLogsCategory.currentText() != "" and self.cmbLogsTask.currentText() == "":
+            cursor.execute(sqlCategorySelected, (self.footprint_id, self.cmbLogsCategory.currentText(), "%{}%".format(self.txtLogContains.text())))
+        else:
+            cursor.execute(sqlBothSelected, (self.footprint_id, self.cmbLogsCategory.currentText(), self.cmbLogsTask.currentText(), "%{}%".format(self.txtLogContains.text())))
+            
         for row in cursor.fetchall():
-            self.taskLogs.append(row[2])
+            self.taskLogs.append([row[2], row[3]])
             self.tblTaskLogs.setRowCount(self.tblTaskLogs.rowCount() + 1)
             self.tblTaskLogs.setItem(self.tblTaskLogs.rowCount() - 1, 0, QTableWidgetItem(str(row[0])))
             self.tblTaskLogs.setItem(self.tblTaskLogs.rowCount() - 1, 1, QTableWidgetItem(str(row[1])))
         self.tblTaskLogs.resizeColumnsToContents()
         cursor.close()
         
-    @pyqtSignature("int, int")
-    def on_tblTaskLogs_cellClicked(self, row, column):
-        self.txtTaskLog.setPlainText(self.taskLogs[row])
+    task_log_index = -1
+    @pyqtSignature("int, int, int, int")
+    def on_tblTaskLogs_currentCellChanged(self, row, currentColumn, previousRow, previousColumn):
+        try:
+            clean = lambda dirty: ''.join(filter(string.printable.__contains__,dirty))
+            self.txtTaskLog.setPlainText(clean(self.taskLogs[row][0]))
+            self.task_log_index = row
+        except:
+            self.txtTaskLog.setPlainText("")
         
     website_ids = []
     def updateWebsites(self):
         self.tblWebsites.setRowCount(0)
         self.website_ids = []
-        sql = "select hd.ip_address, hd.host_name, pd.port_number, w.html_title, w.id from host_data hd join port_data pd on hd.id = pd.host_data_id join websites w on w.port_data_id = pd.id where hd.footprint_id = %s"
+        sql = "select hd.ip_address, hd.host_name, pd.port_number, w.html_title, w.id from host_data hd join port_data pd on hd.id = pd.host_data_id join websites w on w.port_data_id = pd.id where hd.footprint_id = %s order by w.id"
         cursor = self.db.cursor()
-        cursor.execute(sql, (self.footprint_id))
+        cursor.execute(sql, (self.footprint_id, ))
         for row in cursor.fetchall():
             self.website_ids.append(row[4])
             self.tblWebsites.setRowCount(self.tblWebsites.rowCount() + 1)
@@ -151,23 +327,57 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.tblWebsites.setItem(self.tblWebsites.rowCount() - 1, 1, QTableWidgetItem(str(row[1])))
             self.tblWebsites.setItem(self.tblWebsites.rowCount() - 1, 2, QTableWidgetItem(str(row[2])))
             self.tblWebsites.setItem(self.tblWebsites.rowCount() - 1, 3, QTableWidgetItem(str(row[3])))
+            
+            item = QTableWidgetItem()
+            item.setData(Qt.EditRole, int(row[4]))
+            self.tblWebsites.setItem(self.tblWebsites.rowCount() - 1, 4, item)
         cursor.close()
 
     def updateDomainsSummary(self):
         self.tblDomains.setRowCount(0)
-        sql = "select domain_name from domains where footprint_id = %s order by domain_name"
+        sql = "select id, domain_name from domains where footprint_id = %s order by domain_name"
         cursor = self.db.cursor()
-        cursor.execute(sql, (self.footprint_id))
+        cursor.execute(sql, (self.footprint_id, ))
         for row in cursor.fetchall():
             self.tblDomains.setRowCount(self.tblDomains.rowCount() + 1)
-            self.tblDomains.setItem(self.tblDomains.rowCount() - 1, 0, QTableWidgetItem(str(row[0])))
+            self.tblDomains.setItem(self.tblDomains.rowCount() - 1, 0, QTableWidgetItem(str(row[1])))
+            
+            c2 = self.db.cursor()
+            sql2 = """select
+                        count(distinct dc.username)
+                    from
+                        domain_credentials dc
+                        join domain_credentials_map m on dc.id = m.domain_credentials_id and dc.footprint_id = m.footprint_id
+                        join host_data hd on hd.id = m.host_data_id and hd.footprint_id = m.footprint_id
+                    where
+                        dc.cleartext_password != "" and
+                        hd.is_dc = 1 and 
+                        m.valid = 1 and
+                        hd.footprint_id = %s and
+                        hd.domain = %s"""
+                            
+            c2.execute(sql2, (self.footprint_id,  row[1], ))
+            value = c2.fetchone()[0]
+            c2.close()
+            self.tblDomains.setItem(self.tblDomains.rowCount() - 1, 1, QTableWidgetItem(str(value)))
+            
+            c3 = self.db.cursor()
+            sql3 = """select 
+                        (select count(*) from domain_credentials where footprint_id = %s and ntlm_hash != "" and cleartext_password != "" and domain = %s) / 
+                        (select count(*) from domain_credentials where footprint_id = %s and ntlm_hash != "" and domain = %s) * 100"""
+                            
+            c3.execute(sql3, (self.footprint_id, row[1], self.footprint_id, row[1], ))
+            value = str(c3.fetchone()[0])
+            c3.close()
+            self.tblDomains.setItem(self.tblDomains.rowCount() - 1, 2, QTableWidgetItem(str(value.split(".")[0].replace("None", "0""") + " %")))
+        self.tblDomains.resizeColumnsToContents()
         cursor.close()
         
     def updatePortsSummary(self):
         self.tblOpenPortsSummary.setRowCount(0)
         sql = "select port_number, count(port_number) from host_data hd join port_data pd on hd.id = pd.host_data_id where footprint_id = %s group by port_number"
         cursor = self.db.cursor()
-        cursor.execute(sql, (self.footprint_id))
+        cursor.execute(sql, (self.footprint_id, ))
         for row in cursor.fetchall():
             self.tblOpenPortsSummary.setRowCount(self.tblOpenPortsSummary.rowCount() + 1)
             self.tblOpenPortsSummary.setItem(self.tblOpenPortsSummary.rowCount() - 1, 0, QTableWidgetItem(str(row[0])))
@@ -181,7 +391,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 (select count(*) from host_data hd join port_data pd on hd.id = pd.host_data_id join vulnerabilities v on pd.id = v.port_data_id where hd.footprint_id = %s) as 'vulns'
         """
         cursor = self.db.cursor()
-        cursor.execute(sql, (self.footprint_id, self.footprint_id, self.footprint_id))
+        cursor.execute(sql, (self.footprint_id, self.footprint_id, self.footprint_id, ))
         row = cursor.fetchone()
         self.lblSummaryLabel.setText("Identified {0} hosts, {1} open ports, {2} shells".format(row[0], row[1],  row[2]))
         cursor.close()
@@ -192,7 +402,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 union select 'Impersonation Tokens' as label, (select count(distinct t.token) from host_data hd join tokens t on hd.id = t.host_id where hd.footprint_id = %s order by t.token) as count"""
         self.tblCredsSummary.setRowCount(0)
         cursor = self.db.cursor()
-        cursor.execute(sql, (self.footprint_id, self.footprint_id, self.footprint_id))
+        cursor.execute(sql, (self.footprint_id, self.footprint_id, self.footprint_id, ))
         for row in cursor.fetchall():
             self.tblCredsSummary.setRowCount(self.tblCredsSummary.rowCount() + 1)
             self.tblCredsSummary.setItem(self.tblCredsSummary.rowCount() - 1, 0, QTableWidgetItem(str(row[0])))
@@ -204,7 +414,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tblVulnsSummary.setRowCount(0)
         sql = "select vd.description, count(vd.description) from host_data hd join port_data pd on hd.id = pd.host_data_id join vulnerabilities v on v.port_data_id = pd.id join vulnerability_descriptions vd on vd.id = v.vulnerability_descriptions_id where hd.footprint_id = %s group by vd.description"
         cursor = self.db.cursor()
-        cursor.execute(sql, (self.footprint_id))
+        cursor.execute(sql, (self.footprint_id, ))
         for row in cursor.fetchall():
             self.tblVulnsSummary.setRowCount(self.tblVulnsSummary.rowCount() + 1)
             self.tblVulnsSummary.setItem(self.tblVulnsSummary.rowCount() - 1, 0, QTableWidgetItem(str(row[0])))
@@ -225,9 +435,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def updateHostsTreeview(self):
         self.initHostsTreeview()
-        sql = "select net_range from net_ranges where footprint_id = %s order by net_range"
+        sql = "select distinct net_range from net_ranges where footprint_id = %s order by net_range"
         cursor = self.db.cursor()
-        cursor.execute(sql, (self.footprint_id))
+        cursor.execute(sql, (self.footprint_id, ))
         for row in cursor.fetchall():
             node = QStandardItem(row[0])
             self.tvHostsModel.appendRow(node)
@@ -255,9 +465,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if p0:
             threading.Timer(self.updateSummaryInterval, self.callUpdateSummaryTrigger).start()
         
+    def clearHostData(self):
+        self.lblComputerName.setText("")
+        self.lblOS.setText("")
+        self.lblArchitecture.setText("")
+        self.lblLanguage.setText("")
+        self.lblDomain.setText("")
+        
+        self.tblHostPorts.setRowCount(0)
+        self.tblHostVulns.setRowCount(0)
+        self.tblHostCredsSummary.setRowCount(0)
+        self.tblLocalCreds.setRowCount(0)
+        self.tblDomainCreds.setRowCount(0)
+        self.tblAvailableTokens.setRowCount(0)
+        self.tblExploitLogs.setRowCount(0)
+        self.txtExploitLog.setText("")
+        
     exploit_logs = []
     @pyqtSignature("QModelIndex")
     def on_tvHosts_clicked(self, index):
+        self.clearHostData()
         node = index.model().itemFromIndex(index)
         
         if str(node.text()).find("0/24") != -1:
@@ -268,14 +495,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             for i in range(0, node.rowCount()):
                 node.removeRow(0)
             cursor = self.db.cursor()
-            cursor.execute("select ip_address, host_name from host_data where ip_address like %s and footprint_id = %s order by INET_ATON(ip_address)", (net_range, self.footprint_id))
+            cursor.execute("select ip_address, host_name from host_data where ip_address like %s and footprint_id = %s order by INET_ATON(ip_address)", (net_range, self.footprint_id, ))
             for row in cursor.fetchall():
                 node.appendRow( [ QStandardItem(row[0]),  QStandardItem(row[1]) ] )
             cursor.close()
         else:
             sql = "select computer_name, os, architecture, system_language, domain from host_data where ip_address = %s and footprint_id = %s"
             cursor = self.db.cursor()
-            cursor.execute(sql, (node.text(), self.footprint_id))
+            cursor.execute(sql, (node.text(), self.footprint_id, ))
             row = cursor.fetchone()
             self.lblComputerName.setText(row[0])
             self.lblOS.setText(row[1])
@@ -286,7 +513,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             
             sql = "select pd.port_number from host_data hd join port_data pd on hd.id = pd.host_data_id where hd.ip_address = %s and hd.footprint_id = %s order by pd.port_number"
             cursor = self.db.cursor()
-            cursor.execute(sql, (node.text(), self.footprint_id))
+            cursor.execute(sql, (node.text(), self.footprint_id, ))
             self.tblHostPorts.setRowCount(0)
             for row in cursor.fetchall():
                 self.tblHostPorts.setRowCount(self.tblHostPorts.rowCount() + 1)
@@ -296,7 +523,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             
             sql = "select pd.port_number, vd.description from host_data hd join port_data pd on hd.id = pd.host_data_id join vulnerabilities v on v.port_data_id = pd.id join vulnerability_descriptions vd on vd.id = v.vulnerability_descriptions_id where hd.ip_address = %s and hd.footprint_id = %s"
             cursor = self.db.cursor()
-            cursor.execute(sql, (node.text(), self.footprint_id))
+            cursor.execute(sql, (node.text(), self.footprint_id, ))
             self.tblHostVulns.setRowCount(0)
             for row in cursor.fetchall():
                 self.tblHostVulns.setRowCount(self.tblHostVulns.rowCount() + 1)
@@ -308,7 +535,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             #sql = "select vd.description, el.log from host_data hd join port_data pd on hd.id = pd.host_data_id join vulnerabilities v on pd.id = v.port_data_id join vulnerability_descriptions vd on vd.id = v.vulnerability_descriptions_id join exploit_logs el on el.vulnerability_id = v.id where hd.ip_address = %s and hd.footprint_id = %s"
             sql = "select vd.description, el.log from host_data hd join exploit_logs el on hd.id = el.host_data_id join vulnerability_descriptions vd on vd.id = el.vulnerability_description_id where hd.ip_address = %s and hd.footprint_id = %s"
             cursor = self.db.cursor()
-            cursor.execute(sql, (node.text(), self.footprint_id))
+            cursor.execute(sql, (node.text(), self.footprint_id, ))
             self.tblExploitLogs.setRowCount(0)
             self.exploit_logs = []
             for row in cursor.fetchall():
@@ -320,7 +547,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             
             sql = "select lc.username, lc.cleartext_password, lc.lm_hash, lc.ntlm_hash from host_data hd join local_credentials lc on hd.id = lc.host_data_id where hd.ip_address = %s and hd.footprint_id = %s order by lc.username"
             cursor = self.db.cursor()
-            cursor.execute(sql, (node.text(), self.footprint_id))
+            cursor.execute(sql, (node.text(), self.footprint_id, ))
             self.tblLocalCreds.setRowCount(0)
             for row in cursor.fetchall():
                 self.tblLocalCreds.setRowCount(self.tblLocalCreds.rowCount() + 1)
@@ -332,10 +559,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             cursor.close()
             
             sql = """select 'Local Credentials' as label, (select count(distinct lc.username, lc.cleartext_password)  from local_credentials_map m join host_data hd on hd.id = m.host_data_id join local_credentials lc on lc.id = m.local_credentials_id where hd.footprint_id = %s and hd.ip_address = %s and lc.cleartext_password != '' and m.valid = 1) as count
-                    union select 'Domain Credentials' as label, (select count(*) from domain_credentials_map m join host_data hd on hd.id = m.host_data_id where hd.footprint_id = %s and hd.ip_address = %s) as count
+                    union select 'Domain Credentials' as label, (select count(*) from domain_credentials_map m join host_data hd on hd.id = m.host_data_id where hd.footprint_id = %s and hd.ip_address = %s and m.valid = 1) as count
                     union select 'Impersonation Tokens' as label, (select count(t.token) from host_data hd join tokens t on hd.id = t.host_id where hd.footprint_id = %s and hd.ip_address = %s order by t.token) as count"""
             cursor = self.db.cursor()
-            cursor.execute(sql, (self.footprint_id, node.text(), self.footprint_id, node.text(), self.footprint_id, node.text()))
+            cursor.execute(sql, (self.footprint_id, node.text(), self.footprint_id, node.text(), self.footprint_id, node.text(), ))
             self.tblHostCredsSummary.setRowCount(0)
             for row in cursor.fetchall():
                 self.tblHostCredsSummary.setRowCount(self.tblHostCredsSummary.rowCount() + 1)
@@ -344,9 +571,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.tblHostCredsSummary.resizeColumnsToContents()
             cursor.close()
             
-            sql = "select t.token from host_data hd join tokens t on hd.id = t.host_id where hd.ip_address = %s and hd.footprint_id = %s order by t.token"
+            sql = """select 
+                        t.token
+                    from host_data hd join tokens t on hd.id = t.host_id 
+                    where hd.ip_address = %s and hd.footprint_id = %s 
+                    and t.token not like 'NT AUTHORITY%%' 
+                    and t.token not like 'NT SERVICE%%'
+                    and t.token not like 'Window Manager%%'
+                    and t.token not like 'IIS APPPOOL%%'
+                    and t.token not like '%%$%%'
+                    and t.token != 'error while running command. will try again'
+                    order by t.token"""
             cursor = self.db.cursor()
-            cursor.execute(sql, (node.text(), self.footprint_id))
+            cursor.execute(sql, (node.text(), self.footprint_id, ))
             self.tblAvailableTokens.setRowCount(0)
             for row in cursor.fetchall():
                 self.tblAvailableTokens.setRowCount(self.tblAvailableTokens.rowCount() + 1)
@@ -354,9 +591,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.tblAvailableTokens.resizeColumnsToContents()
             cursor.close()
             
-            sql = "select dc.domain, dc.username, dc.cleartext_password from host_data hd join domain_credentials_map m on m.host_data_id = hd.id join domain_credentials dc on dc.id = m.domain_credentials_id where hd.footprint_id = %s and hd.ip_address = %s"
+            sql = "select dc.domain, dc.username, dc.cleartext_password from host_data hd join domain_credentials_map m on m.host_data_id = hd.id join domain_credentials dc on dc.id = m.domain_credentials_id where hd.footprint_id = %s and hd.ip_address = %s and m.valid = 1"
             cursor = self.db.cursor()
-            cursor.execute(sql, (self.footprint_id, node.text()))
+            cursor.execute(sql, (self.footprint_id, node.text(), ))
             self.tblDomainCreds.setRowCount(0)
             for row in cursor.fetchall():
                 self.tblDomainCreds.setRowCount(self.tblDomainCreds.rowCount() + 1)
@@ -366,48 +603,165 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.tblDomainCreds.resizeColumnsToContents()
             cursor.close()
     
-    @pyqtSignature("int, int")
-    def on_tblExploitLogs_cellClicked(self, row, column):
-        self.txtExploitLog.setText(self.exploit_logs[row])
+    @pyqtSignature("int, int, int, int")
+    def on_tblExploitLogs_currentCellChanged(self, row, currentColumn, previousRow, previousColumn):
+        logtext = self.exploit_logs[row]
+        clean = lambda dirty: ''.join(filter(string.printable.__contains__,dirty))
+        self.txtExploitLog.setText(clean(logtext))
         
-    @pyqtSignature("int, int")
-    def on_tblWebsites_cellClicked(self, row, column):
+    @pyqtSignature("int, int, int, int")
+    def on_tblDomainGroups_currentCellChanged(self, row, currentColumn, previousRow, previousColumn):
+        try:
+            domain = self.tblDomains_2.item(self.tblDomains_2.currentRow(), 0).text()
+            domain_group = self.tblDomainGroups.item(self.tblDomainGroups.currentRow(), 0).text()
+            self.tblDomainGroupUsers.setRowCount(0)
+            cursor = self.db.cursor()
+            cursor.execute("select dc.username from domain_user_group_map m join domain_groups dg on dg.id = m.domain_group_id join domain_credentials dc on dc.id = m.domain_credentials_id join domains d on dg.domain_id = d.id where dg.footprint_id = %s and dg.group_name = %s and d.domain_name = %s order by dc.username", (self.footprint_id, domain_group, domain, ))
+            for row in cursor.fetchall():
+                self.tblDomainGroupUsers.setRowCount(self.tblDomainGroupUsers.rowCount() + 1)
+                self.tblDomainGroupUsers.setItem(self.tblDomainGroupUsers.rowCount() - 1, 0, QTableWidgetItem(str(row[0])))
+            self.tblDomainGroupUsers.resizeColumnsToContents()
+            cursor.close()
+        except:
+            pass
+        
+    @pyqtSignature("int, int, int, int")
+    def on_tblDomains_2_currentCellChanged(self, row, currentColumn, previousRow, previousColumn):
+        domain = self.tblDomains_2.item(self.tblDomains_2.currentRow(), 0).text()
+        
+        self.tblDomainGroupUsers.setRowCount(0)
+        
+        self.tblDomainControllers.setRowCount(0)
         cursor = self.db.cursor()
-        cursor.execute("select html_title, html_body, screenshot from websites where id = %s", (self.website_ids[row]))
+        cursor.execute("select hd.ip_address, hd.host_name from host_data hd where hd.footprint_id = %s and hd.is_dc = 1 and hd.domain = %s order by hd.ip_address", (self.footprint_id, domain, ))
+        for row in cursor.fetchall():
+            self.tblDomainControllers.setRowCount(self.tblDomainControllers.rowCount() + 1)
+            self.tblDomainControllers.setItem(self.tblDomainControllers.rowCount() - 1, 0, QTableWidgetItem(str(row[0])))
+            self.tblDomainControllers.setItem(self.tblDomainControllers.rowCount() - 1, 1, QTableWidgetItem(str(row[1])))
+        self.tblDomainControllers.resizeColumnsToContents()
+        cursor.close()
+        
+        self.tblDomainControllerCredMap.setRowCount(0)
+        cursor = self.db.cursor()
+        cursor.execute("select hd.ip_address, hd.host_name, dc.domain, dc.username, dc.cleartext_password from domain_credentials_map m join host_data hd on hd.id = m.host_data_id join domain_credentials dc on dc.id = m.domain_credentials_id where m.valid = 1 and hd.footprint_id = %s and  hd.domain = %s and hd.is_dc = 1 order by hd.ip_address, dc.username", (self.footprint_id, domain, ))
+        for row in cursor.fetchall():
+            self.tblDomainControllerCredMap.setRowCount(self.tblDomainControllerCredMap.rowCount() + 1)
+            self.tblDomainControllerCredMap.setItem(self.tblDomainControllerCredMap.rowCount() - 1, 0, QTableWidgetItem(str(row[0])))
+            self.tblDomainControllerCredMap.setItem(self.tblDomainControllerCredMap.rowCount() - 1, 1, QTableWidgetItem(str(row[1])))
+            self.tblDomainControllerCredMap.setItem(self.tblDomainControllerCredMap.rowCount() - 1, 2, QTableWidgetItem(str(row[2])))
+            self.tblDomainControllerCredMap.setItem(self.tblDomainControllerCredMap.rowCount() - 1, 3, QTableWidgetItem(str(row[3])))
+            self.tblDomainControllerCredMap.setItem(self.tblDomainControllerCredMap.rowCount() - 1, 4, QTableWidgetItem(str(row[4])))
+        self.tblDomainControllerCredMap.resizeColumnsToContents()
+        cursor.close()
+        
+        self.tblDomainGroups.setRowCount(0)
+        cursor = self.db.cursor()
+        cursor.execute("select distinct dg.group_name from domains d join domain_groups dg on d.id = dg.domain_id and d.footprint_id = dg.footprint_id join domain_user_group_map m on dg.id = m.domain_group_id  where d.footprint_id = %s and d.domain_name = %s order by dg.group_name", (self.footprint_id, domain, ))
+        for row in cursor.fetchall():
+            self.tblDomainGroups.setRowCount(self.tblDomainGroups.rowCount() + 1)
+            self.tblDomainGroups.setItem(self.tblDomainGroups.rowCount() - 1, 0, QTableWidgetItem(str(row[0])))
+        self.tblDomainGroups.resizeColumnsToContents()
+        cursor.close()
+        
+        
+    @pyqtSignature("int, int, int, int")
+    def on_tblWebsites_currentCellChanged(self, row, currentColumn, previousRow, previousColumn):
+        cursor = self.db.cursor()
+        cursor.execute("select html_title, html_body, screenshot from websites where id = %s", (self.tblWebsites.item(row, 4).text(), ))
         row = cursor.fetchone()
         cursor.close()
         
-        with open("temp/websites_website.jpg", 'w') as f:
-            f.write(row[2])
-        
-        websitePixmap = QPixmap(QString.fromUtf8('temp/websites_website.jpg'))
+        try:
+            with open("temp/websites_website.jpg", 'w') as f:
+                f.write(row[2])
+            
+            websitePixmap = QPixmap(QString.fromUtf8('temp/websites_website.jpg'))
+ 
         #websitePixmapScaledPixmap = websitePixmap.scaled(self.lblWebsitesScreenshot.size(),  Qt.KeepAspectRatio)
         #self.lblWebsitesScreenshot.setPixmap(websitePixmap.scaledToWidth(self.lblWebsitesScreenshot.width()))
-        self.lblWebsitesScreenshot.setPixmap(websitePixmap)
+            self.lblWebsitesScreenshot.setPixmap(websitePixmap)
+        except:
+            self.lblWebsitesScreenshot.clear()
         self.txtWebsiteHtml.setPlainText(row[1])
         
+    def syncCredsWithPotFile(self):
+        unknown_hashes_fn = "temp/" + ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(6))
+        known_passwords_fn = "temp/" + ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(6))
+        
+        fh = open(known_passwords_fn, 'w')
+        cursor = self.db.cursor()
+        cursor.execute("""select cleartext_password from domain_credentials where footprint_id = %s and cleartext_password != "" """, (self.footprint_id, ))
+        for row in cursor.fetchall():
+            fh.write(row[0] + "\n")
+        fh.close()
+        cursor.close()
+        
+        fh = open(unknown_hashes_fn, 'w')
+        cursor = self.db.cursor()
+        #Including know password/hash combos will feed the john.pot file with creds from memory, which might otherwise have been difficult to recover
+        cursor.execute("""select domain, username, ntlm_hash from domain_credentials where footprint_id = %s and ntlm_hash != "" """, (self.footprint_id, ))
+        #cursor.execute("""select domain, username, ntlm_hash from domain_credentials where footprint_id = %s and cleartext_password = "" and ntlm_hash != "" """, (params.footprint_id, ))
+        for row in cursor.fetchall():
+            fh.write("{0}${1}:{2}\n".format(row[0], row[1], row[2]))
+        fh.close()
+        cursor.close()
+        
+        #add any new creds to the pot file
+        os.popen("john {0} --format=nt --wordlist={1}".format(unknown_hashes_fn, known_passwords_fn))
+        
+        #import all creds from pot file
+        for row in os.popen("john {0} --format=nt --show".format(unknown_hashes_fn)).read().split("\n"):
+            if row != "":
+                if row.find("password hashes cracked, ") == -1:
+                    domain = row.split("$", 1)[0]
+                    username = row.split("$", 1)[1].split(":", 1)[0]
+                    password = row.split("$", 1)[1].split(":", 1)[1]
+                    
+                    #print "found creds: domain:[{}] username:[{}] password:[{}]".format(domain, username, password)
+                    
+                    if password != "":
+                        try:
+                            cursor = self.db.cursor()
+                            cursor.execute("call addDomainCreds(%s, %s, %s, %s, %s, '', '')",  (self.footprint_id, 0, domain, username, password, ))
+                            cursor.close()
+                        except:
+                            pass
+        self.updateCredsTrigger.emit()
+        
+    @pyqtSignature("")
+    def on_btnSyncJohnPotFile_clicked(self):
+        thread.start_new_thread(self.syncCredsWithPotFile, ())
     
     @pyqtSignature("")
     def on_btnUpdateCreds_clicked(self):
-        sqlAllDomainCreds = "select distinct domain, username, cleartext_password from domain_credentials where footprint_id = %s"
+        sqlAllDomainCreds = "select distinct domain, username, cleartext_password, lm_hash, ntlm_hash from domain_credentials where footprint_id = %s order by domain, username"
         sqlValidDomainCreds = "select hd.ip_address, dc.domain, dc.username, dc.cleartext_password from domain_credentials_map m join host_data hd on hd.id = m.host_data_id join domain_credentials dc on dc.id = m.domain_credentials_id where hd.footprint_id = %s and m.valid = %s"
         sqlAllLocalCreds = "select distinct lc.username, lc.cleartext_password, lc.lm_hash, lc.ntlm_hash from local_credentials_map m join host_data hd on hd.id = m.host_data_id join local_credentials lc on lc.id = m.local_credentials_id where hd.footprint_id = %s and m.valid = 1"
         sqlValidLocalCreds = "select hd.ip_address, lc.username, lc.cleartext_password, lc.lm_hash, lc.ntlm_hash, m.valid from local_credentials_map m join host_data hd on hd.id = m.host_data_id join local_credentials lc on lc.id = m.local_credentials_id where hd.footprint_id = %s and m.valid = %s"
-        sqlTokens = "select distinct t.token from host_data hd join tokens t on hd.id = t.host_id where hd.footprint_id = %s order by token"
+        sqlTokens = """select distinct t.token from host_data hd join tokens t on hd.id = t.host_id where hd.footprint_id = %s  
+                    and t.token not like 'NT AUTHORITY%%' 
+                    and t.token not like 'NT SERVICE%%'
+                    and t.token not like 'Window Manager%%'
+                    and t.token not like 'IIS APPPOOL%%'
+                    and t.token not like '%%$%%'
+                    and t.token != 'error while running command. will try again'
+                    order by token"""
         
         cursor = self.db.cursor()
-        cursor.execute(sqlAllDomainCreds, (self.footprint_id))
+        cursor.execute(sqlAllDomainCreds, (self.footprint_id, ))
         self.tblAllDomainCreds.setRowCount(0)
         for row in cursor.fetchall():
             self.tblAllDomainCreds.setRowCount(self.tblAllDomainCreds.rowCount() + 1)
             self.tblAllDomainCreds.setItem(self.tblAllDomainCreds.rowCount() - 1, 0, QTableWidgetItem(str(row[0])))
             self.tblAllDomainCreds.setItem(self.tblAllDomainCreds.rowCount() - 1, 1, QTableWidgetItem(str(row[1])))
             self.tblAllDomainCreds.setItem(self.tblAllDomainCreds.rowCount() - 1, 2, QTableWidgetItem(str(row[2])))
+            self.tblAllDomainCreds.setItem(self.tblAllDomainCreds.rowCount() - 1, 3, QTableWidgetItem(str(row[3])))
+            self.tblAllDomainCreds.setItem(self.tblAllDomainCreds.rowCount() - 1, 4, QTableWidgetItem(str(row[4])))
         self.tblAllDomainCreds.resizeColumnsToContents()
         cursor.close()
         
         cursor = self.db.cursor()
-        cursor.execute(sqlValidDomainCreds, (self.footprint_id, "1"))
+        cursor.execute(sqlValidDomainCreds, (self.footprint_id, "1", ))
         self.tblValidDomainCreds.setRowCount(0)
         for row in cursor.fetchall():
             self.tblValidDomainCreds.setRowCount(self.tblValidDomainCreds.rowCount() + 1)
@@ -419,7 +773,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         cursor.close()
         
         cursor = self.db.cursor()
-        cursor.execute(sqlValidDomainCreds, (self.footprint_id, "0"))
+        cursor.execute(sqlValidDomainCreds, (self.footprint_id, "0", ))
         self.tblInvalidDomainCreds.setRowCount(0)
         for row in cursor.fetchall():
             self.tblInvalidDomainCreds.setRowCount(self.tblInvalidDomainCreds.rowCount() + 1)
@@ -431,7 +785,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         cursor.close()
         
         cursor = self.db.cursor()
-        cursor.execute(sqlAllLocalCreds, (self.footprint_id))
+        cursor.execute(sqlAllLocalCreds, (self.footprint_id, ))
         self.tblAllLocalCreds.setRowCount(0)
         for row in cursor.fetchall():
             self.tblAllLocalCreds.setRowCount(self.tblAllLocalCreds.rowCount() + 1)
@@ -443,7 +797,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         cursor.close()
         
         cursor = self.db.cursor()
-        cursor.execute(sqlValidLocalCreds, (self.footprint_id, "1"))
+        cursor.execute(sqlValidLocalCreds, (self.footprint_id, "1", ))
         self.tblValidLocalCreds.setRowCount(0)
         for row in cursor.fetchall():
             self.tblValidLocalCreds.setRowCount(self.tblValidLocalCreds.rowCount() + 1)
@@ -456,7 +810,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         cursor.close()
         
         cursor = self.db.cursor()
-        cursor.execute(sqlValidLocalCreds, (self.footprint_id, "0"))
+        cursor.execute(sqlValidLocalCreds, (self.footprint_id, "0", ))
         self.tblInvalidLocalCreds.setRowCount(0)
         for row in cursor.fetchall():
             self.tblInvalidLocalCreds.setRowCount(self.tblInvalidLocalCreds.rowCount() + 1)
@@ -467,12 +821,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         cursor.close()
         
         cursor = self.db.cursor()
-        cursor.execute(sqlTokens, (self.footprint_id))
+        cursor.execute(sqlTokens, (self.footprint_id, ))
         self.tblTokens.setRowCount(0)
         for row in cursor.fetchall():
             self.tblTokens.setRowCount(self.tblTokens.rowCount() + 1)
             self.tblTokens.setItem(self.tblTokens.rowCount() - 1, 0, QTableWidgetItem(str(row[0])))
         self.tblTokens.resizeColumnsToContents()
+        cursor.close()
+
+    @pyqtSignature("")
+    def on_btnUpdateDomains_clicked(self):
+        self.tblDomains_2.setRowCount(0)
+        cursor = self.db.cursor()
+        cursor.execute("select domain_name from domains where footprint_id = %s order by domain_name", (self.footprint_id, ))
+        for row in cursor.fetchall():
+            self.tblDomains_2.setRowCount(self.tblDomains_2.rowCount() + 1)
+            self.tblDomains_2.setItem(self.tblDomains_2.rowCount() - 1, 0, QTableWidgetItem(str(row[0])))
+        self.tblDomains_2.resizeColumnsToContents()
         cursor.close()
 
     @pyqtSignature("")
@@ -494,7 +859,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 hd.footprint_id = %s"""
                 
         cursor = self.db.cursor()
-        cursor.execute(sql, (self.footprint_id))
+        cursor.execute(sql, (self.footprint_id, ))
         for row in cursor.fetchall():
             print row[0]
             node = QStandardItem(row[0])
@@ -510,11 +875,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             join task_descriptions td on tl.task_descriptions_id = td.id
             join task_categories tc on tc.id = td.task_categories_id
         where tl.footprint_id = %s and
-            td.enabled = 1 and tl.in_progress = %s and tl.completed = %s group by td.task_name order by tc.category
+            td.enabled = 1 and tl.in_progress = %s and tl.completed = %s and td.is_recursive = 0 group by td.task_name order by tc.category
+        """
+       
+
+        sql2 = """
+        select 
+            tc.category, td.task_name, count(td.task_name) as 'count' 
+        from task_list tl
+            join task_descriptions td on tl.task_descriptions_id = td.id
+            join task_categories tc on tc.id = td.task_categories_id
+        where tl.footprint_id = %s and
+            td.enabled = 1 and tl.in_progress = %s and tl.completed = %s  group by td.task_name order by tc.category
+        """
+ 
+        sqlEventless = """
+            select 'Network Pivoting', 'Verify domain credentials', count(id) from domain_credentials where footprint_id = %s and cleartext_password != "" and verified = 0
+            union
+            select 'Network Pivoting', 'Check domain credentials for rpd access', count(*) from domain_credentials dc join host_data hd on hd.footprint_id = dc.footprint_id join port_data pd on pd.host_data_id = hd.id and pd.port_number = 445 and (hd.id, dc.id) not in (select host_data_id, domain_credentials_id from domain_credentials_map) where dc.valid = 1 and hd.footprint_id = %s
         """
         
         cursor = self.db.cursor()
-        cursor.execute(sql, (self.footprint_id, "0", "0"))
+        cursor.execute(sql, (self.footprint_id, False, False, ))
         self.tblTaskListPending.setRowCount(0)
         for row in cursor.fetchall():
             self.tblTaskListPending.setRowCount(self.tblTaskListPending.rowCount() + 1)
@@ -525,18 +907,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         cursor.close()
         
         cursor = self.db.cursor()
-        cursor.execute(sql, (self.footprint_id, "1", "0"))
+        cursor.execute(sqlEventless, (self.footprint_id, self.footprint_id, ))
+        self.tblTaskListPending_2.setRowCount(0)
+        for row in cursor.fetchall():
+            self.tblTaskListPending_2.setRowCount(self.tblTaskListPending_2.rowCount() + 1)
+            self.tblTaskListPending_2.setItem(self.tblTaskListPending_2.rowCount() - 1, 0, QTableWidgetItem(str(row[0])))
+            self.tblTaskListPending_2.setItem(self.tblTaskListPending_2.rowCount() - 1, 1, QTableWidgetItem(str(row[1])))
+            self.tblTaskListPending_2.setItem(self.tblTaskListPending_2.rowCount() - 1, 2, QTableWidgetItem(str(row[2])))
+        self.tblTaskListPending_2.resizeColumnsToContents()
+        cursor.close()
+        
+        cursor = self.db.cursor()
+        cursor.execute(sql2, (self.footprint_id, True, False, ))
         self.tblTaskListInProgress.setRowCount(0)
         for row in cursor.fetchall():
             self.tblTaskListInProgress.setRowCount(self.tblTaskListInProgress.rowCount() + 1)
             self.tblTaskListInProgress.setItem(self.tblTaskListInProgress.rowCount() - 1, 0, QTableWidgetItem(str(row[0])))
             self.tblTaskListInProgress.setItem(self.tblTaskListInProgress.rowCount() - 1, 1, QTableWidgetItem(str(row[1])))
-            self.tblTaskListInProgress.setItem(self.tblTaskListInProgress.rowCount() - 1, 2, QTableWidgetItem(str(row[2])))
+            self.tblTaskListInProgress.setItem(self.tblTaskListInProgress.rowCount() - 1, 2, QTableWidgetItem(str(row[2])))                 
         self.tblTaskListInProgress.resizeColumnsToContents()
         cursor.close()
         
-        cursor = self.db.cursor()
-        cursor.execute(sql, (self.footprint_id, "0", "1"))
+        cursor = self.db.cursor()                               
+        cursor.execute(sql2, (self.footprint_id, False, True, ))
         self.tblTaskListDone.setRowCount(0)
         for row in cursor.fetchall():
             self.tblTaskListDone.setRowCount(self.tblTaskListDone.rowCount() + 1)
@@ -553,3 +946,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def on_cbxUpdateTaskList_stateChanged(self, p0):
         if p0:
             threading.Timer(self.updateTaskListInterval, self.callUpdateTaskListTrigger).start()
+
+    @pyqtSignature("int")
+    def on_checkBox_stateChanged(self, p0):
+        self.frame.setVisible(p0)
+
+    @pyqtSignature("int")
+    def on_cbxTaskLogsFilterVisible_stateChanged(self, p0):
+        self.frameLogFilter.setVisible(p0)
+
+
+    
