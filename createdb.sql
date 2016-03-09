@@ -430,7 +430,7 @@ CREATE TABLE `task_descriptions` (
 
 LOCK TABLES `task_descriptions` WRITE;
 /*!40000 ALTER TABLE `task_descriptions` DISABLE KEYS */;
-INSERT INTO `task_descriptions` VALUES (1,1,'Add Local IP','Portscan the class C your IP address falls in','plugins.host_enumeration.add_local_ip','\0','\0',''),(2,2,'Portscan Host','...','plugins.footprinting.portscan_host','\0','\0','\0'),(3,2,'Portscan Net Range','...','plugins.footprinting.portscan_net_range','\0','\0',''),(4,2,'Host DNS Lookup','...','plugins.footprinting.host_dns_lookup','\0','\0','\0'),(5,1,'Add Local Nameservers','...','plugins.host_enumeration.add_local_nameservers','\0','\0',''),(6,2,'Screenshot Website','...','plugins.footprinting.screenshot_website','\0','\0',''),(7,3,'Check MS08-067','...','plugins.vuln_scanning.ms08_067','\0','\0',''),(8,4,'Exploit MS08-067','...','plugins.vuln_exploits.exploit_ms08_067','','\0',''),(9,5,'Pivot on local accounts','...','plugins.pivoting.retry_local_accounts','\0','','\0'),(10,5,'Local account login with PsExec','...','plugins.pivoting.psexec_local_account','','\0','\0'),(11,2,'Portscan scoped host','...','plugins.footprinting.portscan_scoped_host','\0','\0',''),(12,3,'Check Weak SQL Creds','...','plugins.vuln_scanning.weak_sql_creds','\0','\0',''),(13,4,'Exploit Weak SQL Creds','...','plugins.vuln_exploits.exploit_weak_sql_creds','','\0',''),(14,3,'Check for weak Tomcat creds','...','plugins.vuln_scanning.weak_tomcat_creds','\0','\0',''),(15,4,'Exploit Weak Tomcat Creds','...','plugins.vuln_exploits.exploit_weak_tomcat_creds','','\0',''),(16,5,'Pivot on domain accounts','...','plugins.pivoting.retry_domain_accounts','\0','',''),(17,5,'Domain account login with PsExec','...','plugins.pivoting.psexec_domain_account','','\0',''),(18,2,'Portscan scoped range','...','plugins.footprinting.portscan_scoped_range','\0','\0',''),(19,5,'Verify domain credentials','...','plugins.pivoting.verify_domain_credentials','\0','',''),(20,6,'Gather domain users and groups','...','plugins.domain_enumeration.enumerate_users_and_groups','','',''),(21,6,'Extract domain hashes','...','plugins.domain_enumeration.extract_domain_hashes','','',''),(22,6,'Bruteforce domain hashes','Run john with the following lists\n - Short list of weak passwords, ie Password1, January2016 etc\n - Passwords recovered with Mimikatz\n - Previously cracked passwords\n\nRun john again for 5 minutes\n\nThen run john --show, and save the output','plugins.domain_enumeration.bruteforce_ntlm_hashes','\0','\0',''),(23,2,'Net Range DNS Lookups','...','plugins.footprinting.net_range_dns_lookup','\0','\0',''),(24,2,'Scoped Range DNS Lookups','...','plugins.footprinting.scoped_range_dns_lookup','\0','\0',''),(25,1,'Zone Transfer Assigned Domain','...','plugins.host_enumeration.zone_transfer_assigned_domain','\0','\0','');
+INSERT INTO `task_descriptions` VALUES (1,1,'Add Local IP','Portscan the class C your IP address falls in','plugins.host_enumeration.add_local_ip','\0','\0',''),(2,2,'Portscan Host','...','plugins.footprinting.portscan_host','\0','\0','\0'),(3,2,'Portscan Net Range','...','plugins.footprinting.portscan_net_range','\0','\0',''),(4,2,'Host DNS Lookup','...','plugins.footprinting.host_dns_lookup','\0','\0','\0'),(5,1,'Add Local Nameservers','...','plugins.host_enumeration.add_local_nameservers','\0','\0',''),(6,2,'Screenshot Website','...','plugins.footprinting.screenshot_website','\0','\0',''),(7,3,'Check MS08-067','...','plugins.vuln_scanning.ms08_067','\0','\0',''),(8,4,'Exploit MS08-067','...','plugins.vuln_exploits.exploit_ms08_067','','\0',''),(9,5,'Pivot on local accounts','...','plugins.pivoting.retry_local_accounts','\0','','\0'),(10,5,'Local account login with PsExec','...','plugins.pivoting.psexec_local_account','','\0','\0'),(11,2,'Portscan scoped host','...','plugins.footprinting.portscan_scoped_host','\0','\0',''),(12,3,'Check Weak SQL Creds','...','plugins.vuln_scanning.weak_sql_creds','\0','\0',''),(13,4,'Exploit Weak SQL Creds','...','plugins.vuln_exploits.exploit_weak_sql_creds','','\0',''),(14,3,'Check for weak Tomcat creds','...','plugins.vuln_scanning.weak_tomcat_creds','\0','\0',''),(15,4,'Exploit Weak Tomcat Creds','...','plugins.vuln_exploits.exploit_weak_tomcat_creds','','\0',''),(16,5,'Check domain credentials for rpd access','...','plugins.pivoting.retry_domain_accounts','\0','',''),(17,5,'Domain account login with PsExec','...','plugins.pivoting.psexec_domain_account','','\0',''),(18,2,'Portscan scoped range','...','plugins.footprinting.portscan_scoped_range','\0','\0','\0'),(19,5,'Verify domain credentials','...','plugins.pivoting.verify_domain_credentials','\0','',''),(20,6,'Gather domain users and groups','...','plugins.domain_enumeration.enumerate_users_and_groups','','',''),(21,6,'Extract domain hashes','...','plugins.domain_enumeration.extract_domain_hashes','','',''),(22,6,'Bruteforce domain hashes','Run john with the following lists\n - Short list of weak passwords, ie Password1, January2016 etc\n - Passwords recovered with Mimikatz\n - Previously cracked passwords\n\nRun john again for 5 minutes\n\nThen run john --show, and save the output','plugins.domain_enumeration.bruteforce_ntlm_hashes','\0','\0',''),(23,2,'Net Range DNS Lookups','...','plugins.footprinting.net_range_dns_lookup','\0','\0',''),(24,2,'Scoped Range DNS Lookups','...','plugins.footprinting.scoped_range_dns_lookup','\0','\0',''),(25,1,'Zone Transfer Assigned Domain','...','plugins.host_enumeration.zone_transfer_assigned_domain','\0','\0','');
 /*!40000 ALTER TABLE `task_descriptions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -672,9 +672,6 @@ BEGIN
 		update domain_credentials set lm_hash = _lm_hash, ntlm_hash = _ntlm_hash where footprint_id = _footprint_id and domain = _domain and username = _username;
 	end if;
     
-	
-	
-    
     call addDomain(_footprint_id, _domain);
 END ;;
 DELIMITER ;
@@ -768,7 +765,6 @@ BEGIN
     if (_is_dc = True) then
 		update host_data set is_dc = _is_dc where footprint_id = _footprint_id and ip_address = _ip_address;
 	end if;
-    
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1087,11 +1083,7 @@ BEGIN
 	where 
 		dc.valid = 1 and
 		hd.footprint_id = _footprint_id and
-        hd.is_dc = 1
-	
-		
-		
-		
+        hd.is_dc in (1, 0)
 	limit 1;
 
 	select
@@ -1132,7 +1124,7 @@ BEGIN
 		dc.cleartext_password != "" and
 		dc.verified = 0 and
 		dc.id not in (select domain_credentials_id from domain_credentials_map where footprint_id = _footprint_id) and
-		dc.id not in (select item_identifier from task_list where footprint_id = _footprint_id and task_descriptions_id = 19 and completed = 1) and
+		dc.id not in (select item_identifier from task_list where footprint_id = _footprint_id and task_descriptions_id = 19 and (in_progress = 1 or completed = 1)) and
 		hd.is_dc = 1 limit 1;
         
 	select
@@ -1178,8 +1170,7 @@ where
     footprint_id = _footprint_id and 
     in_progress = 0 and
     completed = 0 
-limit
-	1;
+limit 1;
     
 select @task_id, @item_identifier;
 
@@ -1202,16 +1193,6 @@ DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `setDomainCredsVerified`(in _footprint_id int, in _domain_creds_id int, in _valid bit)
 BEGIN
 	update domain_credentials set verified = 1, valid = _valid where id = _domain_creds_id;
-
-	
-	
-	
-	
-	
-	
-	
-        
-	
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1247,4 +1228,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-02-05 10:38:43
+-- Dump completed on 2016-03-08 21:38:04
