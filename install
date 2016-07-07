@@ -1,5 +1,8 @@
 #!/bin/bash
 
+mkdir temp
+mkdir logs
+
 apt-get install msgpack-python python-twisted python-pip wkhtmltopdf
 
 pip install netifaces
