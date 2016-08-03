@@ -27,3 +27,6 @@ sudo -u postgres bash -c "psql < createdb.sql"
 sudo -u postgres bash -c "psql autodane < createdbstructure.sql"
 sudo -u postgres bash -c "psql autodane -c \"grant all privileges on all tables in schema public to autodane\""
 sudo -u postgres bash -c "psql autodane -c \"grant all privileges on all sequences in schema public to autodane\""
+
+mkdir temp
+mkdir logs
