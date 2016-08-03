@@ -23,7 +23,7 @@ def run(params):
     fh.close()
     cursor.close()
     
-    cmd = "/home/dane/software/JohnTheRipper/run/john {0} --format=NT --wordlist={1}".format(unknown_hashes_fn, known_passwords_fn)
+    cmd = "john {0} --format=NT --wordlist={1}".format(unknown_hashes_fn, known_passwords_fn)
     #cmd = "john {0} --format=NT --wordlist={1}".format(unknown_hashes_fn, known_passwords_fn)
     os.popen(cmd)
     #params.log(cmd)
@@ -33,7 +33,7 @@ def run(params):
     #params.log(cmd)
     
     #cmd = "john {0} --format=NT --show".format(unknown_hashes_fn)
-    cmd = "/home/dane/software/JohnTheRipper/run/john {0} --format=NT --show".format(unknown_hashes_fn)
+    cmd = "john {0} --format=NT --show".format(unknown_hashes_fn)
     output = os.popen(cmd).read()
     params.log(cmd)
     params.log("")
