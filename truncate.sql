@@ -1,0 +1,17 @@
+truncate table domain_credentials restart identity;
+truncate table domain_credentials_map restart identity;
+truncate table domain_groups restart identity;
+truncate table domain_user_group_map restart identity;
+truncate table domains restart identity;
+truncate table exploit_logs restart identity;
+truncate table footprints restart identity;
+truncate table host_data restart identity;
+truncate table local_credentials restart identity;
+truncate table local_credentials_map restart identity;
+truncate table net_ranges restart identity;
+truncate table port_data restart identity;
+truncate table scope restart identity;
+truncate table task_list restart identity;
+truncate table tokens restart identity;
+truncate table vulnerabilities restart identity;
+truncate table websites restart identity;

@@ -1,0 +1,44 @@
+import os
+import random
+import string
+
+def run(params):
+    cursor = params.db.cursor()
+    cursor.execute("select ip_address from host_data where id = %s",  (params.item_identifier, ))
+    ip_address = cursor.fetchone()[0]
+    cursor.close()
+    
+    temp_file_name = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(6))
+
+    ports = ""
+    cursor = params.db.cursor()
+    cursor.execute("select port_number from ports_to_scan where type_id = 2")
+    for row in cursor.fetchall():
+        ports += str(row[0]) + ","
+        
+    ports = ports[:-1]
+    cursor.close()
+
+    os.popen("nmap {0} --excludefile temp/exclude_list -n -p {1} -oG temp/{2} -Pn -vv".format(ip_address, ports, temp_file_name))
+
+    params.log(os.popen("cat temp/{0}".format(temp_file_name)).read())
+
+    hosts = []
+    for line in open('temp/' + temp_file_name):
+        if line[:1] == "#":
+            continue
+
+        if line.find("Status") == -1:
+            host = line[6:]
+            host = host[:host.find(" ")]
+            hosts.append(host)
+
+            items = line[line.find("Ports")+7:]
+            for item in items.split(", "):
+                data = item.split("/")
+                port = data[0]
+                status = data[1]
+                if status == "open":
+                    cursor = params.db.cursor()
+                    cursor.execute("call addPort(%s, %s, %s)", (params.footprint_id, params.item_identifier, port, ))
+                    cursor.close()

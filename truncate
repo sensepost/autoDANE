@@ -1,0 +1,5 @@
+#!/bin/bash
+
+sudo -su postgres bash -c "psql autodane < truncate.sql"
+rm logs/*
+rm temp/*
