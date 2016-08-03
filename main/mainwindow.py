@@ -903,11 +903,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         cursor.close()
 
         # add any new creds to the pot file
-        os.popen("/home/dane/software/john/run/john {0} --format=nt --wordlist={1}".format(
+        os.popen("john {0} --format=nt --wordlist={1}".format(
             unknown_hashes_fn, known_passwords_fn))
 
         # import all creds from pot file
-        for row in os.popen("/home/dane/software/john/run/john {0} --format=nt --show".format(unknown_hashes_fn)).read().split("\n"):
+        for row in os.popen("john {0} --format=nt --show".format(unknown_hashes_fn)).read().split("\n"):
             if row != "":
                 if row.find("password hashes cracked, ") == -1:
                     domain = row.split("$", 1)[0]
